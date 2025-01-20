@@ -1,5 +1,4 @@
 streamlit==1.41.0
-boto3==1.33.11
 streamlit-cognito-auth==1.2.0
 matplotlib
 streamlit_pdf_viewer
