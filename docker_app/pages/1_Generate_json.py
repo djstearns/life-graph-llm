@@ -13,9 +13,15 @@ css = '''
 <style>
     [data-testid="stMain"] {
         max-width: none;
+        overflow: auto;
     }
     section[data-testid="stMain"] {
         display: contents;
+        overflow: auto;
+    }
+    [data-testid="stAppViewContainer"] {
+        overflow: auto;
+        
     }
 </style>
 '''
@@ -64,33 +70,73 @@ else:
     st.session_state["json_suggestion"] = None
     json_suggestion = None
 
-# When there is an input text to process
+# # When there is an input text to process
 def run_llm(input_sent):
-    if input_sent:
-        # Invoke the Bedrock foundation model
-        response = llm.invoke(input_sent)
+#     if input_sent:
+#         # Invoke the Bedrock foundation model
+#         response = llm.invoke(input_sent)
 
-        # Transform response to json
-        json_response = json.loads(response.get("body").read())
+#         # Transform response to json
+#         json_response = json.loads(response.get("body").read())
 
-        # Format response and print it in the console
-        pretty_json_output = json.dumps(json_response, indent=2)
-        print("API response: ", pretty_json_output)
+#         # Format response and print it in the console
+#         pretty_json_output = json.dumps(json_response, indent=2)
+#         print("API response: ", pretty_json_output)
 
-        # Write response on Streamlit web interface
-        st.write("**Foundation model output** \n\n", json_response['completion'])
+#         # Write response on Streamlit web interface
+#         st.write("**Foundation model output** \n\n", json_response['completion'])
         
-        # Regular expression to match content between triple backticks
-        pattern = r"```(.*?)```"
-        # Find all matches and return them as a list
-        code_blocks = re.findall(pattern, json_response['completion'], re.DOTALL)
+#         # Regular expression to match content between triple backticks
+#         pattern = r"```(.*?)```"
+#         # Find all matches and return them as a list
+#         code_blocks = re.findall(pattern, json_response['completion'], re.DOTALL)
 
-        # if 'key' not in st.session_state:
-        st.session_state.json_suggestion = code_blocks
+#         # if 'key' not in st.session_state:
+          
+
+        code = '''{
+            "birthdate": "1987-08-13",
+            "data": [
+                {
+                "date": "2024-09-17", 
+                "comment": "Retirement party"
+                },
+                {
+                "date": "2035-05-15",
+                "comment": "Daughter's college graduation" 
+                },
+                {
+                "date": "2033-06-03",
+                "comment": "Son's high school graduation"
+                }, 
+                {
+                "date": "2030-07-04", 
+                "comment": "Family vacation to Hawaii"
+                },
+                {
+                "date": "2029-11-26",
+                "comment": "Promotion to senior manager"
+                },
+                {
+                "date": "2027-08-10",
+                "comment": "10 year wedding anniversary"
+                },
+                {
+                "date": "2025-04-07",
+                "comment": "First house purchase"
+                },
+                {
+                "date": "2024-09-16",
+                "comment": "Started new job"
+                },
+                {
+                "date":"1987-08-15",
+                "comment":"Birth"
+                }
+            ]
+            }'''
+        st.session_state.json_suggestion = code
         
-
-
-    
 
 # Ask user for input text
 # input_sent = st.text_input("Input Sentence", "Say Hello World! in Spanish, French and Japanese.")
