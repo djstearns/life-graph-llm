@@ -13,9 +13,15 @@ css = '''
 <style>
     [data-testid="stMain"] {
         max-width: none;
+        overflow: auto;
     }
     section[data-testid="stMain"] {
         display: contents;
+        overflow: auto;
+    }
+    [data-testid="stAppViewContainer"] {
+        overflow: auto;
+        
     }
 </style>
 '''

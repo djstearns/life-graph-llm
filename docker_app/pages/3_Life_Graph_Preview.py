@@ -17,6 +17,10 @@ css = '''
     section[data-testid="stMain"] {
         display: contents;
     }
+    [data-testid="stAppViewContainer"] {
+        overflow: auto;
+        
+    }
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
