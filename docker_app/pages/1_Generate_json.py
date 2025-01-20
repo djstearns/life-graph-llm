@@ -71,7 +71,7 @@ else:
     json_suggestion = None
 
 # # When there is an input text to process
-# def run_llm(input_sent):
+def run_llm(input_sent):
 #     if input_sent:
 #         # Invoke the Bedrock foundation model
 #         response = llm.invoke(input_sent)
@@ -92,7 +92,50 @@ else:
 #         code_blocks = re.findall(pattern, json_response['completion'], re.DOTALL)
 
 #         # if 'key' not in st.session_state:
-#         st.session_state.json_suggestion = code_blocks
+          
+
+        code = '''{
+            "birthdate": "1987-08-13",
+            "data": [
+                {
+                "date": "2024-09-17", 
+                "comment": "Retirement party"
+                },
+                {
+                "date": "2035-05-15",
+                "comment": "Daughter's college graduation" 
+                },
+                {
+                "date": "2033-06-03",
+                "comment": "Son's high school graduation"
+                }, 
+                {
+                "date": "2030-07-04", 
+                "comment": "Family vacation to Hawaii"
+                },
+                {
+                "date": "2029-11-26",
+                "comment": "Promotion to senior manager"
+                },
+                {
+                "date": "2027-08-10",
+                "comment": "10 year wedding anniversary"
+                },
+                {
+                "date": "2025-04-07",
+                "comment": "First house purchase"
+                },
+                {
+                "date": "2024-09-16",
+                "comment": "Started new job"
+                },
+                {
+                "date":"1987-08-15",
+                "comment":"Birth"
+                }
+            ]
+            }'''
+        st.session_state.json_suggestion = code
         
 
 # Ask user for input text
