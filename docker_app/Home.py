@@ -1,6 +1,5 @@
 import streamlit as st
 import json
-import boto3
 import numpy as np
 import time
 from utils.auth import Auth
