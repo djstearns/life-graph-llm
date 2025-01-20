@@ -21,23 +21,6 @@ css = '''
 '''
 st.markdown(css, unsafe_allow_html=True)
 
-# ID of Secrets Manager containing cognito parameters
-secrets_manager_id = Config.SECRETS_MANAGER_ID
-
-# ID of the AWS region in which Secrets Manager is deployed
-region = Config.DEPLOYMENT_REGION
-
-# Initialise CognitoAuthenticator
-authenticator = Auth.get_authenticator(secrets_manager_id, region)
-
-# Authenticate user, and stop here if not logged in
-is_logged_in = authenticator.login()
-if not is_logged_in:
-    st.stop()
-
-
-def logout():
-    authenticator.logout()
 
 # Add title on the page
 st.title("Life Graph Generator")
@@ -48,5 +31,5 @@ st.text("Welcome to the Life Graph Generator. This application generates life gr
 st.text("Here are some sample graphs others have generated:")
 
 with st.sidebar:
-    st.text(f"Welcome,\n{authenticator.get_username()}")
-    st.button("Logout", "logout_btn", on_click=logout)   
+    st.text(f"Welcome!")
+   
