@@ -34,13 +34,6 @@ st.markdown(css, unsafe_allow_html=True)
 #st.header("test html import")
 
 # Authenticate user, and stop here if not logged in
-is_logged_in = authenticator.login()
-if not is_logged_in:
-    st.stop()
-
-
-def logout():
-    authenticator.logout()
 
 # Add title on the page
 st.title("Generative Json")
