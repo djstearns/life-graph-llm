@@ -46,7 +46,7 @@ if 'json_suggestion' in st.session_state:
 
 # st.markdown(source_code, unsafe_allow_html=True)
 
-path_to_html = "./sample.html" 
+path_to_html = "sample.html" 
 
 # Read file and keep in variable
 with open(path_to_html,'r') as f: 
