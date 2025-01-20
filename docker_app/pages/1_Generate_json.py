@@ -70,33 +70,30 @@ else:
     st.session_state["json_suggestion"] = None
     json_suggestion = None
 
-# When there is an input text to process
-def run_llm(input_sent):
-    if input_sent:
-        # Invoke the Bedrock foundation model
-        response = llm.invoke(input_sent)
+# # When there is an input text to process
+# def run_llm(input_sent):
+#     if input_sent:
+#         # Invoke the Bedrock foundation model
+#         response = llm.invoke(input_sent)
 
-        # Transform response to json
-        json_response = json.loads(response.get("body").read())
+#         # Transform response to json
+#         json_response = json.loads(response.get("body").read())
 
-        # Format response and print it in the console
-        pretty_json_output = json.dumps(json_response, indent=2)
-        print("API response: ", pretty_json_output)
+#         # Format response and print it in the console
+#         pretty_json_output = json.dumps(json_response, indent=2)
+#         print("API response: ", pretty_json_output)
 
-        # Write response on Streamlit web interface
-        st.write("**Foundation model output** \n\n", json_response['completion'])
+#         # Write response on Streamlit web interface
+#         st.write("**Foundation model output** \n\n", json_response['completion'])
         
-        # Regular expression to match content between triple backticks
-        pattern = r"```(.*?)```"
-        # Find all matches and return them as a list
-        code_blocks = re.findall(pattern, json_response['completion'], re.DOTALL)
+#         # Regular expression to match content between triple backticks
+#         pattern = r"```(.*?)```"
+#         # Find all matches and return them as a list
+#         code_blocks = re.findall(pattern, json_response['completion'], re.DOTALL)
 
-        # if 'key' not in st.session_state:
-        st.session_state.json_suggestion = code_blocks
+#         # if 'key' not in st.session_state:
+#         st.session_state.json_suggestion = code_blocks
         
-
-
-    
 
 # Ask user for input text
 # input_sent = st.text_input("Input Sentence", "Say Hello World! in Spanish, French and Japanese.")
