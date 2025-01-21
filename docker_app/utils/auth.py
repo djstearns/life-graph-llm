@@ -1,5 +1,5 @@
-import boto3
 import json
+import boto3
 from streamlit_cognito_auth import CognitoAuthenticator
 
 class Auth:
