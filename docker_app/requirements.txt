@@ -2,3 +2,4 @@ streamlit==1.41.0
 streamlit-cognito-auth==1.2.0
 matplotlib
 streamlit_pdf_viewer
+pylatex
