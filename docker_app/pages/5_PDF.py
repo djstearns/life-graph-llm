@@ -50,6 +50,8 @@ with st.sidebar:
 # # rerun.
 # st.button("Re-run")
 
+#This page will not work on stream lit.
+
 css = '''
 <style>
     [data-testid="stMain"] {

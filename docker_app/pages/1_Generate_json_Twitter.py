@@ -4,10 +4,12 @@ import boto3
 import numpy as np
 import time
 import re
+import requests
 from utils.auth import Auth
 from utils.llm import Llm
 from config_file import Config
 import streamlit.components.v1 as components
+from twitter_module import TwitterClient # Import the Twitter client
 
 css = '''
 <style>
@@ -42,9 +44,32 @@ with st.sidebar:
     st.text(f"Welcome!")
     st.sidebar.header("Generate Json")    
 
+    # Add Twitter form in the sidebar
+    st.sidebar.subheader("Fetch Tweets")
+    bearer_token = st.sidebar.text_input("Bearer Token")
+    twitter_handle = st.sidebar.text_input("Twitter Handle")
+    num_tweets = st.sidebar.number_input("Number of Tweets", min_value=1, max_value=100, value=10)
+    fetch_tweets_button = st.sidebar.button("Fetch Tweets")
+
+    if fetch_tweets_button and twitter_handle:
+        # Create an instance of the TwitterClient
+        twitter_client = TwitterClient(bearer_token)
+
+        # Fetch the tweets
+        tweets = twitter_client.get_tweets(twitter_handle, num_tweets)
+        
+        # Log tweets to the console
+        for tweet in tweets:
+            st.write(tweet)
+            print(tweet)
+        
+        st.session_state["tweets"] = tweets
 
 # Create the large language model object
 llm = Llm(Config.BEDROCK_REGION)
+
+st.header("How to use this page:")
+st.write("This Page has two sections: The first is your current draft of Current Json Data, the second is a form that generates a json string that you can use to create your life graph. The third section is a form that fetches content from a twitter handle. You can use the content to generate a json string for your life graph. ")
 
 if 'json_suggestion' in st.session_state:
     json_suggestion = st.session_state["json_suggestion"]
@@ -137,8 +162,10 @@ with st.form("my_form"):
         input_sent = input
 # st.write("Outside the form")
 
+if 'tweets' in st.session_state:
+    tweets = st.session_state["tweets"]
+    #We may need to parse tweets to get just events and dates
+    st.text_area("Fetched Tweets", value="\n".join(tweets), height=200)
 
-
- 
 
 
