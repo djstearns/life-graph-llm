@@ -131,3 +131,77 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This application is licensed under the MIT-0 License. See the LICENSE file.
+
+# life-graph-llm — Local development guide
+
+Quick instructions to get this project running locally for development.
+
+## Prerequisites
+- Python 3.9+ (or your project's supported Python version)
+- git
+- (Optional) AWS CLI configured if you want to use AWS credentials from your environment
+
+## Setup (recommended)
+1. Clone the repo
+   - git clone <repo-url> /path/to/life-graph-llm
+   - cd /Users/derek/Documents/Misc/life-graph-llm
+
+2. Create and activate a virtual environment
+   - python3 -m venv .venv
+   - source .venv/bin/activate  (Linux / macOS)
+   - .venv\Scripts\activate     (Windows PowerShell)
+
+3. Install dependencies
+   - pip install -r requirements-dev.txt
+
+4. Add secrets (do NOT commit)
+   - Create a `.env` file or set environment variables in your shell:
+     - TWITTER_BEARER_TOKEN or provide the token in the app sidebar
+     - FACEBOOK_ACCESS_TOKEN or provide the token in the app sidebar
+     - AWS credentials (if using Bedrock via boto3):
+       - AWS_ACCESS_KEY_ID
+       - AWS_SECRET_ACCESS_KEY
+       - AWS_SESSION_TOKEN (optional)
+     - BEDROCK region used in code: set `Config.BEDROCK_REGION` in `config_file.py` or export an env var used by your config.
+
+   Notes:
+   - The app can accept tokens via the sidebar inputs during runtime; storing them in your environment is more convenient for repeated testing.
+   - Never commit tokens or secrets to version control.
+
+## Run the Streamlit app
+- Main page (Twitter / Facebook / LLM form):
+  - streamlit run docker_app/pages/1_Generate_json_Twitter.py
+- Wikipedia / URL fetch page:
+  - streamlit run docker_app/pages/2_Generate_json_URL.py
+- Preview page:
+  - streamlit run docker_app/pages/3_Life_Graph_Preview.py
+
+Streamlit will start a local server (default http://localhost:8501). Hot reload is enabled — files saved will refresh the app automatically.
+
+## Running the LLM locally
+- The LLM client uses boto3 to call AWS Bedrock. If you have an AWS session token, either:
+  - export AWS env vars (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN), or
+  - pass tokens to the Llm constructor in code (not recommended for security).
+- Check `utils/llm.py` for the current model id and message format.
+
+## Working with Twitter / Facebook
+- Twitter: provide a valid Bearer Token (v2 API) in the sidebar to fetch tweets. If you get empty results or errors, tokens may be expired or the account may be private. The app will display helpful error messages in the sidebar.
+- Facebook: provide a long-lived access token with the required permissions for reading the feed. The app follows paging to gather the requested number of posts.
+
+## Debugging & tests
+- Basic tests can be run with pytest (if tests are present):
+  - pytest
+- Use `print()` or `st.write()` for quick inspection in Streamlit.
+- Check the console output where Streamlit runs for stack traces.
+
+## Notes & security
+- Keep all tokens and credentials out of source control. Use `.gitignore` to ignore `.env` and any local secret files.
+- For production or shared environments, use a secret manager (AWS Secrets Manager, HashiCorp Vault, etc.).
+
+## Helpful commands
+- Activate venv: `source .venv/bin/activate`
+- Install deps: `pip install -r requirements-dev.txt`
+- Run app: `streamlit run docker_app/pages/1_Generate_json_Twitter.py`
+- Install a new package: `pip install <pkg> && pip freeze > requirements-dev.txt`
+
+That's it — the app should now run locally. If you need additional onboarding content (architecture diagram, component map, or env examples), say which format you prefer.

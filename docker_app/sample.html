@@ -24,6 +24,7 @@
             }
 
         .tooltip .tooltiptext {
+            font-family: Arial, Helvetica, sans-serif;
             visibility: hidden;
             width: 120px;
             background-color: black;
@@ -41,12 +42,12 @@
             visibility: visible;
         }
 
-        .tootip .comment{
-            display: hidden;
+        .tooltip .comment {
+            display: none;
         }
 
         .tooltip:hover .comment {
-            visibility: visible;
+            display: block;
         }
 
 
@@ -88,6 +89,11 @@
             width: 100%;
             height: 100px;
         }
+
+        .comment {
+            display: none;
+        }   
+
         #submitButton {
             margin-top: 10px;
         }
@@ -96,7 +102,7 @@
         .filled1 { background-color: #1a73e8; color: #1a73e8; z-index: 1000; } /* Blue */
         .filled2 { background-color: #34a853; color: #34a853; z-index: 1000; } /* Green */
         .filled3 { background-color: #fbbc05; color: #fbbc05; z-index: 1000; } /* Yellow */
-        .filled4 { background-color: #ea4335; color: #ea4335; z-index: 1000; } /* Red */
+        .filled4 { background-color: #ea4335; color: #ea4335; z-index: 1000; } /* Red }
         .filled5 { background-color: #ff6f61; color: #ff6f61; z-index: 1000; } /* Coral */
         .filled6 { background-color: #4caf50; color: #4caf50; z-index: 1000; } /* Purple */
         .filled7 { background-color: #88b04b; color: #88b04b; z-index: 1000; } /* Olive Green */
@@ -114,6 +120,7 @@
         .filled19 { background-color: #a5a5d4; color: #a5a5d4; z-index: 1000; } /* Periwinkle */
         .filled20 { background-color: #d4a5a5; color: #d4a5a5; z-index: 1000; } /* Light Coral */
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <!--<h1>Custom Grid with Comments</h1>-->
@@ -240,7 +247,7 @@
             // Create colored boxes for the grid
             for (let i = 0; i < TOTAL_BOXES; i++) {
                 const box = document.createElement('div');
-                box.className = 'box';
+                box.className = 'box tooltip';
                 box.id = `box-${i}`;
 
                 const span = document.createElement('span')
@@ -287,12 +294,37 @@
                     jsonItemCounter++;
                 }
                 span.textContent = boxString;
-                box.classList.add('tooltip');
                 box.appendChild(span);
                 box.appendChild(comment);
                 container.appendChild(box);
               
             }
+
+            // Initialize jQuery tooltips
+            //$('.tooltip').tooltip();
+        
+            $( function() {
+                $( document ).tooltip({
+                items: "span", //, [data-geo], [title]",
+                content: function() {
+                    var element = $( this );
+                    if ( element.is( "span" ) ) {
+                    var text = element.text();
+                    return "<img class='map' alt='" + text +
+                        "' src='https://maps.google.com/maps/api/staticmap?" +
+                        "zoom=11&size=350x350&maptype=terrain&sensor=false&center=" +
+                        text + "'>";
+                    }
+                    if ( element.is( "[title]" ) ) {
+                    return element.attr( "title" );
+                    }
+                    if ( element.is( "img" ) ) {
+                    return element.attr( "alt" );
+                    }
+                }
+                });
+            } );
+            
         }
 
         // Function to handle form submission
