@@ -4,3 +4,4 @@ streamlit-cognito-auth==1.2.0
 matplotlib==3.5
 streamlit_pdf_viewer
 latex
+tweepy
