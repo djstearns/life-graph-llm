@@ -14,6 +14,7 @@ class Llm:
 
     def __init__(self, bedrock_region, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None):
         # Create Bedrock client, optionally supplying explicit credentials including a session token
+        
         client_args = {
             'service_name': 'bedrock-runtime',
             'region_name': bedrock_region,

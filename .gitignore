@@ -4,7 +4,8 @@ __pycache__
 .pytest_cache
 .venv
 *.egg-info
-
+docker_app/graphs/credentials.json
+docker_app/.streamlit/secrets.toml
 # CDK asset staging directory
 .cdk.staging
 cdk.out
