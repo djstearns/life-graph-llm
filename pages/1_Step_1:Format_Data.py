@@ -8,8 +8,8 @@ import requests
 from utils.llm import Llm
 from config_file import Config
 import streamlit.components.v1 as components
-from twitter_module import TwitterClient # Import the Twitter client
-from facebook_module import FacebookClient  # Import the Facebook client
+# from pages.modules.twitter_module import TwitterClient # Import the Twitter client
+from pages.modules.facebook_module import FacebookClient  # Import the Facebook client
 
 css = '''
 <style>
@@ -115,10 +115,16 @@ with st.sidebar:
 
         if fetch_tweets_button and st.session_state['twitter_handle']:
             try:
+                # Example usage (remove or wrap in `if __name__ == "__main__":` if needed):
+                api = TwitterAPI(st.session_state['bearer_token'])
+                user = api.get_user_by_username(st.session_state['twitter_handle'])
+                tweets = api.get_user_tweets(user["data"]["id"], max_results=st.session_state['num_tweets'])
+                # print(tweets)
                 # Create an instance of the TwitterClient using persisted token
-                twitter_client = TwitterClient(st.session_state['bearer_token'])
+                ###### OLD #####
+                # twitter_client = TwitterClient(st.session_state['bearer_token'])
                 # Fetch the tweets
-                tweets = twitter_client.get_tweets(st.session_state['twitter_handle'], st.session_state['num_tweets'])
+                # tweets = twitter_client.get_tweets(st.session_state['twitter_handle'], st.session_state['num_tweets'])
                 # Check for empty result (graceful failure)
                 if not tweets:
                     st.sidebar.error("No tweets returned. This may indicate an expired or invalid bearer token, a private account, or no available tweets.")
