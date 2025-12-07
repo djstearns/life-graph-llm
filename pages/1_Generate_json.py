@@ -4,7 +4,6 @@ import boto3
 import numpy as np
 import time
 import re
-from utils.auth import Auth
 from utils.llm import Llm
 from config_file import Config
 import streamlit.components.v1 as components
@@ -37,8 +36,7 @@ st.markdown(css, unsafe_allow_html=True)
 st.title("Generative Json")
 
 with st.sidebar:
-    st.text(f"Welcome,\n{authenticator.get_username()}")
-    st.button("Logout", "logout_btn", on_click=logout)
+    st.text(f"Welcome!")
     st.sidebar.header("Generate Json")    
 
 
