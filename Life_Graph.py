@@ -45,7 +45,7 @@ def render_graph_tiles(candidates=None, per_row=3):
         candidates = [
             os.path.join(repo_root, 'graphs'),
             os.path.join(os.path.dirname(__file__), 'graphs'),
-            '/graphs',
+            'pages/graphs',
         ]
 
     graphs_dir = None
@@ -55,7 +55,7 @@ def render_graph_tiles(candidates=None, per_row=3):
             break
 
     if not graphs_dir:
-        st.info('No `graphs` directory found. Create a `graphs/` folder in the project root (or set up one under docker_app/) to enable tiles.')
+        st.info('No `graphs` directory found. Create a `pages/graphs/` folder in the project root (or set up one under docker_app/) to enable tiles.')
         return
 
     files = sorted([f for f in os.listdir(graphs_dir) if os.path.isfile(os.path.join(graphs_dir, f))])
@@ -82,7 +82,7 @@ def render_graph_tiles(candidates=None, per_row=3):
             # Select button sets the session state to the chosen graph path
             if st.button('Select', key=f'select_{graphs_dir}_{fname}'):
                 st.session_state['selected_graph'] = file_path
-                st.experimental_rerun()
+                
 
     # If a graph has been selected, show preview/details below
     if 'selected_graph' in st.session_state and st.session_state['selected_graph']:
