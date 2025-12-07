@@ -1,5 +1,6 @@
 import streamlit as st
 import sys
+import os
 import pathlib
 import json
 import boto3
@@ -10,7 +11,8 @@ from config_file import Config
 import streamlit.components.v1 as components
 from datetime import date
 from utils.llm import Llm
-from streamlit_pdf_viewer import pdf_viewer
+# from streamlit_pdf_viewer import pdf_viewer
+from pdf2image import convert_from_path
 import ast
 
 sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
@@ -65,6 +67,29 @@ css = '''
 '''
 st.markdown(css, unsafe_allow_html=True)
 
+
+
+def convert_pdf_to_images_pdf2image(pdf_path, output_folder="extracted_images", dpi=300, fmt="png"):
+    """
+    Converts a PDF file to a series of images using pdf2image.
+
+    Args:
+        pdf_path (str): The path to the input PDF file.
+        output_folder (str): The directory to save the extracted images.
+        dpi (int): The desired resolution (dots per inch) for the output images.
+        fmt (str): The desired image format (e.g., "png", "jpeg").
+    """
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    pages = convert_from_path(pdf_path, dpi=dpi)
+
+    for i, page in enumerate(pages):
+        image_path = os.path.join(output_folder, f"page_{i+1}.{fmt}")
+        page.save(image_path, fmt.upper())
+        # print(f"Saved: {image_path}")
+    return image_path
+
 def generate_lifegraph(birthdate, events):
     # Create a Lifegraph instance
     lg = Lifegraph(birthdate, size=Papersize.A4)
@@ -78,7 +103,9 @@ def generate_lifegraph(birthdate, events):
     lg.save(pdf_path)
     lg.close()
 
-    return pdf_path
+    img_path = convert_pdf_to_images_pdf2image(pdf_path, output_folder="extracted_images", dpi=300, fmt="png")
+
+    return img_path
 
 def setup_page():
     # Example usage
@@ -114,11 +141,14 @@ def setup_page():
     pdf_path = generate_lifegraph(birthdate, my_dict)
 
     # Display the PDF in Streamlit
-    with open(pdf_path, "rb") as pdf_file:
-        pdf_bytes = pdf_file.read()
-        st.download_button(label="Download Lifegraph PDF", data=pdf_bytes, file_name="lifegraph.pdf", mime="application/pdf")
+    #with open(pdf_path, "rb") as pdf_file:
+        # pdf_bytes = pdf_file.read()
+        # st.download_button(label="Download Lifegraph PDF", data=pdf_bytes, file_name="lifegraph.pdf", mime="application/pdf")
         #st.components.v1.html(f'<iframe src="data:application/pdf;base64,{pdf_bytes.encode("base64")}" width="700" height="500"></iframe>', height=500)
-        st.components.v1.html(f'<iframe src="'+pdf_path+'" width="700" height="500"></iframe>', height=500)
+        
+    st.image(pdf_path)
+
+        # st.components.v1.html(f'<iframe src="'+pdf_path+'" width="700" height="500"></iframe>', height=500)
         # st.component.pdf_viewer(
         # "path/to/pdf",
         # on_annotation_click=my_custom_annotation_handler,
