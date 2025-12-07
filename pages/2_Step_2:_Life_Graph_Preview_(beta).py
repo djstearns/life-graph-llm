@@ -6,7 +6,6 @@ import numpy as np
 import time
 import os
 
-from utils.session_auth import require_login
 from utils.llm import Llm
 from config_file import Config
 import streamlit.components.v1 as components
@@ -81,7 +80,7 @@ def update_lifegraph_provider():
         if 'html_data' in st.session_state:
           del st.session_state['html_data']
     else:
-        path_to_html = 'docker_app/graphs/'+resources[provider][0]['file']
+        path_to_html = 'pages/graphs/'+resources[provider][0]['file']
         with open(path_to_html,'r') as f: 
           html_data = f.read()
         st.session_state['lifegraph_provider_url'] = providers.get(path_to_html)
@@ -92,7 +91,7 @@ st.title("Step 2: Life Graph Preview (beta)")
 st.text("Now that you have the data in the format this preview expects we can modify it here before inserting into our Life Graph Page below and pushing the render button." \
 "This is a beta feature. The life graph preview may not display correctly for all JSON inputs. Please review the generated PDF in the next step for the most accurate representation of your life graph.")
 with st.sidebar:
-    require_login()
+
     st.text(f"Welcome!")
 
     # Life graph provider selector (label -> URL value)
