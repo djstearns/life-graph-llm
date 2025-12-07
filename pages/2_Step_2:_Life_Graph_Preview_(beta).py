@@ -107,11 +107,11 @@ with st.sidebar:
     }
 
     resources = {
-        "Matplotlib": [{"file":"graphs.timeline", "function":"my_function","format":"png","type":"python"}],
-        "Buster": [{"file":"buster.html","type":"html"}],
-        "Dewey": [{"file":"dewey.html","type":"html"}],
-        "Djstearns": [{"file":"djstearns.html","type":"html"}],
-        "KShores": [{"file":"graphs.kshores", "function":"generate_lifegraph","format":"pdf","type":"python"}],
+        "Matplotlib": [{"file":"timeline/graphs.timeline", "function":"my_function","format":"png","type":"python"}],
+        "Buster": [{"file":"buster/buster.html","type":"html"}],
+        "Dewey": [{"file":"dewey/dewey.html","type":"html"}],
+        "Djstearns": [{"file":"djstearns/djstearns.html","type":"html"}],
+        "KShores": [{"file":"kshores/graphs.kshores", "function":"generate_lifegraph","format":"pdf","type":"python"}],
         "Google Calendar": [{"file":"gcal.py","function":"main","type":"python"}],
         
     }

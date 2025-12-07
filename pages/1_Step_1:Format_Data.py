@@ -41,7 +41,12 @@ else:
 def run_llm(input_sent):
     if input_sent:
         # Invoke the Bedrock foundation model
-        response = llm.invoke(input_sent )
+        if st.session_state.get("auth_method", "AWS IAM Keys") == "OpenAI API Key":
+            llm = Llm(Config.BEDROCK_REGION, openai_api_key=st.session_state.get("openai_api_key", None))
+            response = llm.invoke_openai(input_sent)
+        else:
+            llm = Llm(Config.BEDROCK_REGION)
+            response = llm.invoke(input_sent )
 
         # Transform response to json
         json_response = json.loads(response.get("body").read())
@@ -85,16 +90,16 @@ if 'fb_num_posts' not in st.session_state:
     st.session_state['fb_num_posts'] = 10
 if 'input_area' not in st.session_state:
     st.session_state['input_area'] = st.session_state.get('json_suggestion') or ""
-if 'wikipedia_url' not in st.session_state:
-    st.session_state['wikipedia_url'] = ""
+if 'web_url' not in st.session_state:
+    st.session_state['web_url'] = ""
 if 'llm_output' not in st.session_state:
     st.session_state['llm_output'] = ""
 if 'tweets' not in st.session_state:
     st.session_state['tweets'] = []
 if 'facebook_feed' not in st.session_state:
     st.session_state['facebook_feed'] = []
-if 'wikipedia_content' not in st.session_state:
-    st.session_state['wikipedia_content'] = ""
+if 'web_content' not in st.session_state:
+    st.session_state['web_content'] = ""
 if 'fbtoken' in st.session_state:
     st.session_state['fb_access_token'] = st.session_state['fbtoken']
 
@@ -103,7 +108,7 @@ with st.sidebar:
 
     # Platform selector: show only the relevant controls (persisted)
     platform = st.sidebar.selectbox("Platform", ["Facebook","Twitter", 
-                                                 "Wikipedia"], key='platform')
+                                                 "Web"], key='platform')
     
     if platform == "Twitter":
         # Add Twitter form in the sidebar
@@ -179,24 +184,24 @@ with st.sidebar:
                 st.session_state["input_area"] = ""
             
 
-    elif platform == "Wikipedia":
-        st.sidebar.subheader("Fetch Wikipedia Content")
-        wikipedia_url = st.sidebar.text_input("Wikipedia URL", key='wikipedia_url')
-        fetch_wikipedia_button = st.sidebar.button("Fetch Wikipedia Content")
+    elif platform == "Web":
+        st.sidebar.subheader("Fetch web Content")
+        web_url = st.sidebar.text_input("Web URL", key='web_url')
+        fetch_web_button = st.sidebar.button("Fetch web Content")
 
-        if fetch_wikipedia_button and st.session_state['wikipedia_url']:
+        if fetch_web_button and st.session_state['web_url']:
             try:
-                response = requests.get(wikipedia_url)
+                response = requests.get(web_url)
                 if response.status_code == 200:
-                    wikipedia_content = response.text
-                    st.session_state["wikipedia_content"] = wikipedia_content
+                    web_content = response.text
+                    st.session_state["web_content"] = web_content
                     # put content into shared input area too
-                    st.session_state["input_area"] = wikipedia_content
+                    st.session_state["input_area"] = web_content
                 else:
-                    st.sidebar.error("Failed to fetch Wikipedia content")
+                    st.sidebar.error("Failed to fetch web content")
             except Exception as e:
-                st.sidebar.error(f"Failed to fetch Wikipedia content: {e}")
-                st.session_state["wikipedia_content"] = ""
+                st.sidebar.error(f"Failed to fetch web content: {e}")
+                st.session_state["web_content"] = ""
                 st.session_state["input_area"] = ""
             
     
@@ -225,12 +230,27 @@ with st.form("my_form"):
     st.session_state['input_pre'] = input_pre
     # bind the text area to a persistent session_state key so it survives page switches
     input_val = st.text_area("Automated Input: Social Media Event Data", value=st.session_state.get('input_area', json_suggestion), key="input_area")
-    # Submit: call LLM using the value currently in session_state
+     # Submit: call LLM using the value currently in session_state
+
+    # Dropdown to select authentication method
+    auth_method = st.sidebar.selectbox(
+        "Choose authentication method for LLM:",
+        ["AWS IAM Keys", "OpenAI API Key"], key="auth_method"
+    )
+
+    # Show input fields based on selection
+    if auth_method == "AWS IAM Keys": 
+        aws_access_key = st.text_input("Provide your IAM User Access Key ID to enable LLM calls.", key="aws_access_key_id",type="password")
+        aws_secret_key = st.text_input("Provide your IAM User Secret Access Key to enable LLM calls.", key="aws_secret_access_key",type="password")   
+        
+    elif auth_method == "OpenAI API Key":
+        openai_api_key = st.text_input("OpenAI API Key", type="password")
+        st.session_state["openai_api_key"] = openai_api_key
+
     submitted = st.form_submit_button(label="Submit", type="secondary")
     if submitted:
         full_str = input_pre + "\n" + st.session_state.get('input_area', "")
         run_llm(full_str)
-
     # Render LLM output after possible run_llm() call so it appears on first submit
     llm_output = st.session_state.get('llm_output', "")
     st.text_area("LLM Output", value=llm_output, height=300)

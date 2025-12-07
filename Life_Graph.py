@@ -39,32 +39,45 @@ def render_graph_tiles(candidates=None, per_row=3):
     - candidates: list of directory paths (absolute or relative) to probe.
     - per_row: number of tiles per row.
     """
-    if candidates is None:
+    # Find all folders inside pages/graphs
+    graphs_root = os.path.join(os.path.dirname(__file__), 'pages', 'graphs')
+    if os.path.exists(graphs_root):
+        folders = [name for name in os.listdir(graphs_root)
+                   if os.path.isdir(os.path.join(graphs_root, name))]
+    else:
+        st.error("pages/graphs directory does not exist.")
+
+    if folders is None:
         # order of preference: repo_root/graphs, docker_app/graphs, /graphs
-        repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
         candidates = [
-            os.path.join(repo_root, 'graphs'),
-            os.path.join(os.path.dirname(__file__), 'graphs'),
             'pages/graphs',
+        ]
+    else:
+        candidates = [
+            os.path.join(graphs_root, folder) for folder in folders
         ]
 
     graphs_dir = None
+    files = {}
     for c in candidates:
+        
         if os.path.isdir(c):
             graphs_dir = c
-            break
+            files[c] = sorted([f for f in os.listdir(graphs_dir) if os.path.isfile(os.path.join(graphs_dir, f))])
+
 
     if not graphs_dir:
         st.info('No `graphs` directory found. Create a `pages/graphs/` folder in the project root (or set up one under docker_app/) to enable tiles.')
         return
 
-    files = sorted([f for f in os.listdir(graphs_dir) if os.path.isfile(os.path.join(graphs_dir, f))])
+  
     if not files:
         st.info(f'No files found in {graphs_dir}')
         return
 
     # Render tiles in rows using columns
     cols = st.columns(per_row)
+
     for i, fname in enumerate(files):
         col = cols[i % per_row]
         file_path = os.path.join(graphs_dir, fname)
@@ -73,15 +86,15 @@ def render_graph_tiles(candidates=None, per_row=3):
             # Show small previews for common image types
             if ext in ('png', 'jpg', 'jpeg', 'gif', 'webp'):
                 try:
-                    st.image(file_path, use_column_width=True)
+                    st.image(file_path, use_container_width=True)
                 except Exception:
-                    st.write(f'{fname}')
+                    st.write(f'{files[fname][0]}')
             else:
-                st.write(f'**{fname}**')
+                st.write(f'**{files[fname][0]}**')
 
             # Select button sets the session state to the chosen graph path
-            if st.button('Select', key=f'select_{graphs_dir}_{fname}'):
-                st.session_state['selected_graph'] = file_path
+            if st.button('Select', key=f'select_{graphs_dir}_{fname}/{files[fname][0]}'):
+                st.session_state['selected_graph'] = file_path+'/' + files[fname][0]
                 
 
     # If a graph has been selected, show preview/details below
@@ -92,7 +105,7 @@ def render_graph_tiles(candidates=None, per_row=3):
         st.write(os.path.basename(sel))
         sel_ext = pathlib.Path(sel).suffix.lower().lstrip('.')
         if sel_ext in ('png', 'jpg', 'jpeg', 'gif', 'webp'):
-            st.image(sel, use_column_width=True)
+            st.image(sel, use_container_width=True)
         else:
             # For other types, show a download link
             try:
