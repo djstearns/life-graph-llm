@@ -8,7 +8,7 @@ import requests
 from utils.llm import Llm
 from config_file import Config
 import streamlit.components.v1 as components
-# from pages.modules.twitter_module import TwitterClient # Import the Twitter client
+from pages.modules.twitter_module import TwitterClient # Import the Twitter client
 from pages.modules.facebook_module import FacebookClient  # Import the Facebook client
 
 css = '''
