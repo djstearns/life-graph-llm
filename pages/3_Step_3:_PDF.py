@@ -16,7 +16,7 @@ from pdf2image import convert_from_path
 import ast
 
 sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
-from lifegraph.lifegraph import Lifegraph, Papersize
+# from lifegraph.lifegraph import Lifegraph, Papersize
 
 st.set_page_config(page_title="PDF", page_icon="📈")
 
