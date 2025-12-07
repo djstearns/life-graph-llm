@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- FROM https://github.com/K20shores/lifegraph -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Color Grid</title>
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(52, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        #container {
+            margin-left: 0px;
+            margin-right: 0px;
+
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+            }
+
+        .tooltip .tooltiptext {
+            font-family: Arial, Helvetica, sans-serif;
+            visibility: hidden;
+            width: 120px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+
+            /* Position the tooltip */
+            position: absolute;
+            z-index: 1;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+        }
+
+        .tooltip .comment {
+            display: none;
+        }
+
+        .tooltip:hover .comment {
+            display: block;
+        }
+
+
+        .box {
+            background-color :rgb(120, 113, 108);
+            border-bottom-color: rgb(68, 64, 60);
+            border-bottom-style:solid;
+            border-bottom-width: 1px;
+            border-image-outset: 0;
+            border-image-repeat: stretch;
+            border-image-slice: 100%;
+            border-image-source: none;
+            border-image-width: 1;
+            border-left-color:rgb(68, 64, 60);
+            border-left-style: solid;
+            border-left-width: 1px;
+            border-right-color: rgb(68, 64, 60);
+            border-right-style: solid;
+            border-right-width: 1px;
+            border-top-color: rgb(68, 64, 60);
+            border-top-style: solid;
+            border-top-width: 1px;
+            color: rgb(68, 64, 60);
+            cursor: pointer;
+            display: block;
+            height: 9.17188px;
+            line-height: 24px;
+            tab-size: 4;
+            text-size-adjust: 100%;
+            unicode-bidi: isolate;
+            width: 9.17188px;
+        }
+        .filled {
+            background-color: #6b5b95; /* Color for filled */
+            color: #6b5b95;
+            z-index: 1000;
+        }
+        #jsonInput {
+            width: 100%;
+            height: 100px;
+        }
+
+        .comment {
+            display: none;
+        }   
+
+        #submitButton {
+            margin-top: 10px;
+        }
+
+        /* ADA-compliant color palette */
+        .filled1 { background-color: #1a73e8; color: #1a73e8; z-index: 1000; } /* Blue */
+        .filled2 { background-color: #34a853; color: #34a853; z-index: 1000; } /* Green */
+        .filled3 { background-color: #fbbc05; color: #fbbc05; z-index: 1000; } /* Yellow */
+        .filled4 { background-color: #ea4335; color: #ea4335; z-index: 1000; } /* Red }
+        .filled5 { background-color: #ff6f61; color: #ff6f61; z-index: 1000; } /* Coral */
+        .filled6 { background-color: #4caf50; color: #4caf50; z-index: 1000; } /* Purple */
+        .filled7 { background-color: #88b04b; color: #88b04b; z-index: 1000; } /* Olive Green */
+        .filled8 { background-color: #ffb3ba; color: #ffb3ba; z-index: 1000; } /* Light Pink */
+        .filled9 { background-color: #ffdfba; color: #ffdfba; z-index: 1000; } /* Peach */
+        .filled10 { background-color: #ffffba; color: #ffffba; z-index: 1000; } /* Light Yellow */
+        .filled11 { background-color: #baffc9; color: #baffc9; z-index: 1000; } /* Mint Green */
+        .filled12 { background-color: #bae1ff; color: #bae1ff; z-index: 1000; } /* Light Blue */
+        .filled13 { background-color: #d4a5a5; color: #d4a5a5; z-index: 1000; } /* Rose */
+        .filled14 { background-color: #d4a5d4; color: #d4a5d4; z-index: 1000; } /* Lavender */
+        .filled15 { background-color: #a5d4d4; color: #a5d4d4; z-index: 1000; } /* Aqua */
+        .filled16 { background-color: #a5d4a5; color: #a5d4a5; z-index: 1000; } /* Light Green */
+        .filled17 { background-color: #d4d4a5; color: #d4d4a5; z-index: 1000; } /* Khaki */
+        .filled18 { background-color: #d4a5a5; color: #d4a5a5; z-index: 1000; } /* Salmon */
+        .filled19 { background-color: #a5a5d4; color: #a5a5d4; z-index: 1000; } /* Periwinkle */
+        .filled20 { background-color: #d4a5a5; color: #d4a5a5; z-index: 1000; } /* Light Coral */
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!--<h1>Custom Grid with Comments</h1>-->
+    Paste your json in the input box below and see your generated graph in HTML.
+    <textarea id="jsonInput" placeholder='Enter JSON data array, e.g., {"birthdate":"1987-08-13","data":[{"date": "2024-09-17", "comment": "B"},{"date": "2024-09-16", "comment": "A"},{"date":"1987-08-15","comment":"birth"},{"range":["1987-10-01","1987-10-08"],"comment":"whaddup"}]}'>
+        {
+            "birthdate": "1809-02-12",
+            "data": [
+              {
+                "itemid": 1,
+                "date": "1860-11-06",
+                "comment": "Elected as the 16th President of the United States."
+              },
+              {
+                "itemid": 2,
+                "date": "1861-03-04",
+                "comment": "First inauguration as President."
+              },
+              {
+                "itemid": 3,
+                "date": "1861-04-12",
+                "comment": "Outbreak of the Civil War with the Confederate attack on Fort Sumter."
+              },
+              {
+                "itemid": 4,
+                "date": "1863-01-01",
+                "comment": "Issued the Emancipation Proclamation, declaring freedom for slaves in Confederate territories."
+              },
+              {
+                "itemid": 5,
+                "date": "1863-11-19",
+                "comment": "Delivered the Gettysburg Address."
+              },
+              {
+                "itemid": 6,
+                "date": "1864-11-08",
+                "comment": "Re-elected as President."
+              },
+              {
+                "itemid": 7,
+                "date": "1865-04-09",
+                "comment": "General Robert E. Lee surrendered to General Ulysses S. Grant at Appomattox Court House, effectively ending the Civil War."
+              },
+              {
+                "date": "1865-04-14",
+                "comment": "Assassinated by John Wilkes Booth at Ford's Theatre."
+              },
+              {
+                "itemid": 8,
+                "date": "1865-04-15",
+                "comment": "Passed away due to assassination injuries."
+              },
+              {
+                "itemid": 9,
+                "range": ["1865-03-04", "1865-04-15"],
+                "comment": "Served as President during the American Civil War."
+              }
+            ]
+          }
+    </textarea>
+    <button id="submitButton">Update Grid</button>
+    <div id="container">
+        <div id="gridContainer" class="grid"></div>
+    </div>
+
+    <script>
+        const TOTAL_BOXES = 4680;
+        const GRID_COLUMNS = 52;
+        const GRID_ROWS = 90;
+
+        // Function to create the grid
+        function createGrid(jsonData) {
+            const jsonDat = jsonData;
+            jsonData = jsonData.data;
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = ''; // Clear any existing content
+
+            const bday = new Date(Date.parse(jsonDat.birthdate));
+            const bday_dow = bday.getDay();
+            jsonItemCounter = 1
+            console.log(jsonData.length);
+            const oneDay = 24 * 60 * 60 * 1000;
+            //parse jsonData for date ranges:
+            for (let d = 0; d < jsonData.length; d++){
+                obj = jsonData[d];
+                if (obj.hasOwnProperty('range')){
+                    stdte = new Date(obj['range'][0]);
+                    eddte = new Date(obj['range'][1]);
+                    r_dow = stdte.getDay();
+                    curdte = stdte;
+                    diffDays = Math.round(Math.abs((stdte - eddte) /  oneDay));
+                    
+                    // Find the date in the middle
+                    const middleDate = new Date(stdte.getTime() + (eddte.getTime() - stdte.getTime()) / 2);
+                    console.log("Middle Date:", middleDate);
+
+                    for(f=0; f < diffDays; f++ ){
+                        
+                        // three cases: bday before, bday on, bday after range day of week. also, range < 7, = 7, > 7.
+                        // case 1: 
+                        //if bday is on a Monday, and range start is a tuesday and length > 7, then two blocks have comment
+                        // if(f == 0 || f % 7 == 0 || ((r_dow < bday_dow) & (f < (diffDays -7 )) )){
+                        //     jsonData.push({'date':curdte.toISOString().split('T')[0],'comment':jsonData[d].comment})
+                        // }else{
+                        //     jsonData.push({'date':curdte.toISOString().split('T')[0],'comment':''})
+                        // }
+                        
+                        if(curdte.getDate() === middleDate.getDate() && curdte.getMonth() === middleDate.getMonth() && curdte.getFullYear() === middleDate.getFullYear()){
+                            console.log('date!')
+                            jsonData.push({'date':curdte.toISOString().split('T')[0],'comment':jsonData[d].comment})
+                        }else{  
+                            jsonData.push({'date':curdte.toISOString().split('T')[0],'comment':' '})
+                        }
+                        
+                        curdte.setDate(curdte.getDate() + 1);  // Add a day to curdte
+                        //console.log('added 1 to curdate')
+                        //console.log(curdte)
+                    }
+                    
+                }
+            }
+
+
+            // Create colored boxes for the grid
+            for (let i = 0; i < TOTAL_BOXES; i++) {
+                const box = document.createElement('div');
+                box.className = 'box tooltip';
+                box.id = `box-${i}`;
+
+                const span = document.createElement('span')
+                span.className = 'tooltiptext';
+
+                // Create a comment element
+                const comment = document.createElement('span');
+                comment.className = 'comment';
+                //comment.style.visibility = 'hidden';
+                
+
+                // Calculate the date for the box
+                //const date = new Date();
+                const startdate = new Date(Date.parse(jsonDat.birthdate));
+
+                // Calculate the date for the box
+                const startDate = new Date(startdate);
+                startdate.setDate(startDate.getDate() + (i * 7))
+                boxString = startdate.toISOString().split('T')[0];
+                content = '';
+                testdate = startdate;
+               
+                
+                for(j = 0; j < 7; j++){
+                    //iterate days to see if this box is included in any of the ranges
+                    const dateString = testdate.toISOString().split('T')[0];
+                    const item = jsonData.find(item => item.date === dateString);
+                    
+                    if (item) {
+                        content = item.comment + content;
+                        event_id = item.itemid;
+                    }
+                    testdate.setDate(testdate.getDate() + 1);
+                }
+                
+                if (content != ''){
+                    if(event_id){
+                        box.classList.add('filled'+event_id.toString());
+                    }else{
+                        box.classList.add('filled');
+                    }
+                    comment.textContent = content;
+                    boxString = boxString + ' ' +content;
+                    jsonItemCounter++;
+                }
+                span.textContent = boxString;
+                box.appendChild(span);
+                box.appendChild(comment);
+                container.appendChild(box);
+              
+            }
+
+            // Initialize jQuery tooltips
+            //$('.tooltip').tooltip();
+        
+            $( function() {
+                $( document ).tooltip({
+                items: "span", //, [data-geo], [title]",
+                content: function() {
+                    var element = $( this );
+                    if ( element.is( "span" ) ) {
+                    var text = element.text();
+                    return "<img class='map' alt='" + text +
+                        "' src='https://maps.google.com/maps/api/staticmap?" +
+                        "zoom=11&size=350x350&maptype=terrain&sensor=false&center=" +
+                        text + "'>";
+                    }
+                    if ( element.is( "[title]" ) ) {
+                    return element.attr( "title" );
+                    }
+                    if ( element.is( "img" ) ) {
+                    return element.attr( "alt" );
+                    }
+                }
+                });
+            } );
+            
+        }
+
+        // Function to handle form submission
+        function handleFormSubmit() {
+            const input = document.getElementById('jsonInput').value;
+            let jsonData;
+
+            try {
+                jsonDat = JSON.parse(input);
+                jsonData = jsonDat.data;
+                // if (!Array.isArray(jsonData) || !jsonData.every((item => typeof item.date === 'string') || (item => typeof item.range === 'string' ) && typeof item.comment === 'string')) {
+                //     throw new Error('Invalid JSON structure');
+                // }
+            } catch (error) {
+                alert('Invalid JSON input. Please provide a valid JSON array with date and comment fields.');
+                return;
+            }
+
+            createGrid(jsonDat);
+        }
+
+        // Attach event listener to the submit button
+        document.getElementById('submitButton').addEventListener('click', handleFormSubmit);
+
+        // Initial grid with default data
+        createGrid([]);
+    </script>
+</body>
+</html>
