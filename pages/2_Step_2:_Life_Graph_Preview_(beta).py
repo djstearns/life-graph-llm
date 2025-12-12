@@ -86,6 +86,12 @@ def update_lifegraph_provider():
         st.session_state['lifegraph_provider_url'] = providers.get(path_to_html)
         st.session_state['html_data'] = html_data
 
+def keep_values():
+    for key in st.session_state:
+        if ':' not in key:
+            st.session_state[key] = st.session_state[key]
+keep_values()
+
 # Add title on the page
 st.title("Step 2: Life Graph Preview (beta)")
 st.text("Now that you have the data in the format this preview expects we can modify it here before inserting into our Life Graph Page below and pushing the render button." \
@@ -107,16 +113,16 @@ with st.sidebar:
     }
 
     resources = {
-        "Matplotlib": [{"file":"timeline/graphs.timeline", "function":"my_function","format":"png","type":"python"}],
+        "Matplotlib": [{"file":"timeline/timeline", "function":"my_function","format":"pdf","type":"python"}],
         "Buster": [{"file":"buster/buster.html","type":"html"}],
         "Dewey": [{"file":"dewey/dewey.html","type":"html"}],
         "Djstearns": [{"file":"djstearns/djstearns.html","type":"html"}],
-        "KShores": [{"file":"kshores/graphs.kshores", "function":"generate_lifegraph","format":"pdf","type":"python"}],
+        "KShores": [{"file":"kshores/kshores", "function":"generate_lifegraph","format":"pdf","type":"python"}],
         "Google Calendar": [{"file":"gcal.py","function":"main","type":"python"}],
         
     }
     
-    provider_label = st.selectbox("Life graph provider", list(providers.keys()), index=0, key='lifegraph_provider_label', on_change=update_lifegraph_provider)
+    provider_label = st.selectbox("Life graph provider", list(providers.keys()), key='lifegraph_provider_label', on_change=update_lifegraph_provider)
     st.session_state['lifegraph_provider_url'] = providers.get(provider_label)
     st.markdown(f"Selected provider: [{provider_label}]({st.session_state['lifegraph_provider_url']})")
 
@@ -223,16 +229,23 @@ with st.form("another-form"):
     if submit:
       try:
         # Dynamically import the module
-        provider = st.session_state.get('lifegraph_provider_label', 'Djstearns')
-        module_name = resources[provider][0]['file']
+        provider = st.session_state.get('lifegraph_provider_label', 'djstearns')
+        print('provider:')
+        print(provider)
+        module_name = 'pages.graphs.' +resources[provider][0]['file'].replace('/','.')
+        fl_name = 'graphs.' +resources[provider][0]['file'].replace('/','.')
+        print('module_name:')
+        print(module_name)
         my_module = importlib.import_module(module_name)
         my_function = getattr(my_module, resources[provider][0]['function'])
         fig =  my_function(st.session_state['input_area_preview'])
+        # st.session_state.lifegraph_provider_label = provider
+        st.session_state['llm_output'] = st.session_state['input_area_preview']
         fmt = resources[provider][0]['format']
         if fmt == 'png':
-            st.image(module_name+"_lifegraph.png")
+            st.image(provider+"_lifegraph.png")
         elif fmt == 'pdf':
-            st.pdf(module_name+"_lifegraph.pdf")
+            st.pdf(provider+"_lifegraph.pdf")
             # with open(module_name+"_lifegraph.pdf", "rb") as pdf_file:
             #     pdf_bytes = pdf_file.read()
             #     st.download_button(label="Download Lifegraph PDF", data=pdf_bytes, file_name="lifegraph.pdf", mime="application/pdf")

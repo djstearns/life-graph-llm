@@ -16,7 +16,7 @@ from pdf2image import convert_from_path
 import ast
 
 sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
-# from lifegraph.lifegraph import Lifegraph, Papersize
+from lifegraph.lifegraph import Lifegraph, Papersize
 
 st.set_page_config(page_title="PDF", page_icon="📈")
 
@@ -99,13 +99,14 @@ def generate_lifegraph(birthdate, events):
         lg.add_life_event(event['text'], event['date'], color=event.get('color', None))
 
     # Save the life graph as a PDF
-    pdf_path = "pages/lifegraph.pdf"
+    lifegraph_provider_label = st.session_state.get('lifegraph_provider_label', 'Matplotlib')
+    pdf_path = f"{lifegraph_provider_label}_lifegraph.png"
     lg.save(pdf_path)
     lg.close()
 
-    img_path = convert_pdf_to_images_pdf2image(pdf_path, output_folder="extracted_images", dpi=300, fmt="png")
+    # img_path = convert_pdf_to_images_pdf2image(pdf_path, output_folder="extracted_images", dpi=300, fmt="png")
 
-    return img_path
+    return pdf_path
 
 def setup_page():
     # Example usage
@@ -120,7 +121,8 @@ def setup_page():
     #     {"text": "First Job", "date": date(2013, 1, 1)},
     # ]
 
-    events = st.session_state.get('llm_output')    
+    events = st.session_state.get('llm_output')  
+    print(events)  
     llm = Llm(Config.BEDROCK_REGION)
     response = llm.invoke("Format the following events in chronological order into a python list of objects where the key 'comment' becomes 'text': and the key 'date' remains the same. Format the values of the date to a python date object like Y-m-d. If there is a range, use the start date only. Return only the python list of objects without any explanation. Here are the events: " + events)
 
@@ -139,20 +141,22 @@ def setup_page():
             date_str = event['date']
             event['date'] = date.fromisoformat(date_str)
     pdf_path = generate_lifegraph(birthdate, my_dict)
-
-    # Display the PDF in Streamlit
-    #with open(pdf_path, "rb") as pdf_file:
-        # pdf_bytes = pdf_file.read()
-        # st.download_button(label="Download Lifegraph PDF", data=pdf_bytes, file_name="lifegraph.pdf", mime="application/pdf")
-        #st.components.v1.html(f'<iframe src="data:application/pdf;base64,{pdf_bytes.encode("base64")}" width="700" height="500"></iframe>', height=500)
-        
+    print(pdf_path)
+    
     st.image(pdf_path)
+    # # Display the PDF in Streamlit
+    # with open(pdf_path, "rb") as pdf_file:
+    #     pdf_bytes = pdf_file.read()
+    #     print(type(pdf_bytes))
+    #     # st.download_button(label="Download Lifegraph PDF", data=pdf_bytes, file_name=pdf_path, mime="application/pdf")
+    #     # st.components.v1.html(f'<iframe src="data:application/pdf;base64,{pdf_bytes}" width="700" height="500"></iframe>', height=500)
+    
 
-        # st.components.v1.html(f'<iframe src="'+pdf_path+'" width="700" height="500"></iframe>', height=500)
-        # st.component.pdf_viewer(
-        # "path/to/pdf",
-        # on_annotation_click=my_custom_annotation_handler,
-        # annotations=annotations
-        # )
+    #     # st.components.v1.html(f'<iframe src="'+pdf_path+'" width="700" height="500"></iframe>', height=500)
+    #     # st.component.pdf_viewer(
+    #     # "path/to/pdf",
+    #     # on_annotation_click=my_custom_annotation_handler,
+    #     # annotations=annotations
+    #     # )
 with st.form("my_form"):
     submitted = st.form_submit_button(label="Create PDF", on_click=setup_page)

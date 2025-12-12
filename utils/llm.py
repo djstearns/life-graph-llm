@@ -3,8 +3,9 @@ import json
 import requests
 
 class Llm:
-    def __init__(self, openai_api_key=None, bedrock_region=None, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None):
+    def __init__(self, openai_api_key=None, bedrock_region='us-east-1', aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None):
         # Create Bedrock client, optionally supplying explicit credentials including a session token
+        
         if bedrock_region:
             client_args = {
                 'service_name': 'bedrock-runtime',
@@ -18,7 +19,7 @@ class Llm:
                 })
                 if aws_session_token:
                     client_args['aws_session_token'] = aws_session_token
-            print('test')
+            # print('test')
             # instantiate client with possible security token
             # note: boto3.client signature expects the service name first; using dict unpack below
             self.bedrock_client = boto3.client('bedrock-runtime',
@@ -38,11 +39,15 @@ class Llm:
         """
         if not self.bedrock_client:
             raise ValueError("Bedrock client not initialized.")
-        prompt = f"\n\nHuman: {input_text}\n\nAssistant:"
-        model_id = "anthropic.claude-v2:1"
+         # Prepare a messages-formatted body instead of a single prompt string
+        messages = [
+            {"role": "user", "content": [{"type": "text", "text": input_text}]}
+        ]
+        model_id = "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-3-5-sonnet-20241022-v2:0"
         body = {
-            "prompt": prompt,
-            "max_tokens_to_sample": 4096,
+            "messages": messages,
+            "max_tokens": 4096,
+            "anthropic_version": "bedrock-2023-05-31",
             "temperature": 0.,
         }
         body = json.dumps(body)

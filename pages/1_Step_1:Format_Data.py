@@ -38,15 +38,15 @@ else:
     json_suggestion = None
 
 # # When there is an input text to process
-def run_llm(input_sent):
+def run_llm(input_sent, aws_secret_key=None, aws_access_key=None):
     if input_sent:
         # Invoke the Bedrock foundation model
         if st.session_state.get("auth_method", "AWS IAM Keys") == "OpenAI API Key":
             llm = Llm(Config.BEDROCK_REGION, openai_api_key=st.session_state.get("openai_api_key", None))
             response = llm.invoke_openai(input_sent)
         else:
-            llm = Llm(Config.BEDROCK_REGION)
-            response = llm.invoke(input_sent )
+            llm = Llm(Config.BEDROCK_REGION, aws_secret_access_key=aws_secret_key, aws_access_key_id=aws_access_key)
+            response = llm.invoke(input_sent)
 
         # Transform response to json
         json_response = json.loads(response.get("body").read())
@@ -66,20 +66,29 @@ def run_llm(input_sent):
         return
 #         # if 'key' not in st.session_state:
           
-
+def keep_values():
+    for key in st.session_state:
+        if ':' not in key:
+            st.session_state[key] = st.session_state[key]
+keep_values()
 # >>> import plotly.express as px
 # >>> fig = px.box(range(10))
 # >>> fig.write_html('test.html')
 
 #st.header("test html import")
 
-
 # Authenticate user, and stop here if not logged in
+
+platform_options = ["Facebook","Twitter", "Web"]
 
 # Add title on the page
 st.title("Step 1b: Create your new Life Graph JSON Data")
 
 # ensure session_state defaults for persistent inputs
+if 'aws_access_key_id' not in st.session_state:
+    st.session_state['aws_access_key_id'] = ""
+if 'fb_access_token' not in st.session_state:
+    st.session_state['fb_access_token'] = ""
 if 'bearer_token' not in st.session_state:
     st.session_state['bearer_token'] = ""
 if 'twitter_handle' not in st.session_state:
@@ -100,22 +109,21 @@ if 'facebook_feed' not in st.session_state:
     st.session_state['facebook_feed'] = []
 if 'web_content' not in st.session_state:
     st.session_state['web_content'] = ""
-if 'fbtoken' in st.session_state:
-    st.session_state['fb_access_token'] = st.session_state['fbtoken']
+if 'platform' not in st.session_state:
+    st.session_state['platform'] = platform_options[2]
 
 with st.sidebar:
     st.sidebar.header("Step 1a: Get your data")
 
     # Platform selector: show only the relevant controls (persisted)
-    platform = st.sidebar.selectbox("Platform", ["Facebook","Twitter", 
-                                                 "Web"], key='platform')
+    platform = st.sidebar.selectbox("Platform", options=platform_options, key='platform', on_change=keep_values)
     
     if platform == "Twitter":
         # Add Twitter form in the sidebar
         st.sidebar.subheader("Fetch Tweets")
-        bearer_token = st.sidebar.text_input("Bearer Token", key='bearer_token')
-        twitter_handle = st.sidebar.text_input("Twitter Handle", key='twitter_handle')
-        num_tweets = st.sidebar.number_input("Number of Tweets", min_value=1, max_value=100, value=st.session_state['num_tweets'], key='num_tweets')
+        bearer_token = st.sidebar.text_input("Bearer Token", key='bearer_token', on_change=keep_values, type="password")
+        twitter_handle = st.sidebar.text_input("Twitter Handle", key='twitter_handle', on_change=keep_values, )
+        num_tweets = st.sidebar.number_input("Number of Tweets", min_value=1, max_value=100, value=st.session_state['num_tweets'], key='num_tweets', on_change=keep_values)
         fetch_tweets_button = st.sidebar.button("Fetch Tweets")
 
         if fetch_tweets_button and st.session_state['twitter_handle']:
@@ -156,8 +164,8 @@ with st.sidebar:
     elif platform == "Facebook":
         # Facebook controls (shown only when platform == "Facebook")
         st.sidebar.subheader("Fetch Facebook Feed")
-        fb_access_token = st.sidebar.text_input("Facebook Access Token", key='fb_access_token', value=st.session_state.get('fb_access_token', ''))
-        fb_num_posts = st.sidebar.number_input("Number of Posts", min_value=1, max_value=10000, value=st.session_state.get('fb_num_posts', 10), key='fb_num_posts')
+        fb_access_token = st.sidebar.text_input("Facebook Access Token", key='fb_access_token', on_change=keep_values, type='password')
+        fb_num_posts = st.sidebar.number_input("Number of Posts", min_value=1, max_value=10000, key='fb_num_posts', on_change=keep_values)
         fetch_facebook_button = st.sidebar.button("Fetch Facebook Feed")
 
         if fetch_facebook_button and st.session_state['fb_access_token']:
@@ -186,7 +194,7 @@ with st.sidebar:
 
     elif platform == "Web":
         st.sidebar.subheader("Fetch web Content")
-        web_url = st.sidebar.text_input("Web URL", key='web_url')
+        web_url = st.sidebar.text_input("Web URL", key='web_url', on_change=keep_values)
         fetch_web_button = st.sidebar.button("Fetch web Content")
 
         if fetch_web_button and st.session_state['web_url']:
@@ -240,8 +248,8 @@ with st.form("my_form"):
 
     # Show input fields based on selection
     if auth_method == "AWS IAM Keys": 
-        aws_access_key = st.text_input("Provide your IAM User Access Key ID to enable LLM calls.", key="aws_access_key_id",type="password")
-        aws_secret_key = st.text_input("Provide your IAM User Secret Access Key to enable LLM calls.", key="aws_secret_access_key",type="password")   
+        aws_access_key_id = st.text_input("Provide your IAM User Access Key ID to enable LLM calls.", key="aws_access_key_id",type="password")
+        aws_secret_access_key = st.text_input("Provide your IAM User Secret Access Key to enable LLM calls.", key="aws_secret_access_key",type="password")   
         
     elif auth_method == "OpenAI API Key":
         openai_api_key = st.text_input("OpenAI API Key", type="password")
@@ -250,7 +258,7 @@ with st.form("my_form"):
     submitted = st.form_submit_button(label="Submit", type="secondary")
     if submitted:
         full_str = input_pre + "\n" + st.session_state.get('input_area', "")
-        run_llm(full_str)
+        run_llm(full_str, st.session_state['aws_secret_access_key'], st.session_state['aws_access_key_id'])
     # Render LLM output after possible run_llm() call so it appears on first submit
     llm_output = st.session_state.get('llm_output', "")
     st.text_area("LLM Output", value=llm_output, height=300)

@@ -15,13 +15,21 @@ css = '''
 <style>
     [data-testid="stMain"] {
         max-width: none;
+        overflow: auto;
     }
     section[data-testid="stMain"] {
         display: contents;
+        overflow: auto;
+    }
+    [data-testid="stAppViewContainer"] {
+        overflow: auto;
+        
     }
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
+
+
 
 
 # Add title on the page
