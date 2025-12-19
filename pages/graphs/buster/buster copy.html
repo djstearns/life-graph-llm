@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Life in Weeks — Sample JSON Renderer</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body { padding: 20px; font-family: -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+    .weeks-grid { display:flex; flex-wrap:wrap; align-items:flex-start; }
+    .label-row { width:100%; margin: 8px 0; display:flex; align-items:center; }
+    .label-row .label { font-weight:600; margin-right:12px; }
+    .week { height:18px; margin:2px; border-radius:3px; background:#e9ecef; display:inline-block; position:relative; }
+    .week a { display:block; width:100%; height:100%; text-decoration:none; }
+    .week.popovered { cursor:pointer; }
+    .future-date { opacity:0.45; }
+    .legend { margin-top:12px; font-size:0.9rem; color:#666; }
+    .container-sm { max-width:1100px; }
+    .color-filled { background:#4e73df; }
+    .color-empty { background:#e9ecef; }
+    /* Input area for live-editing JSON */
+    #weeks-input { width:100%; min-height:160px; font-family: Menlo, Monaco, monospace; font-size:0.85rem; margin-bottom:8px; white-space:pre; }
+    #weeks-input-error { color:#b02a37; margin-left:8px; }
+    
+  </style>
+  <!-- class = .border-trunc {"border border-gray border-secondary float-left text-truncate"}-->
+  <!-- class = .week {week border border-tertiary float-left text-center text-truncate} -->
+  <!-- style = .border-turnc-style {height: 2em; max-height: 2em; padding: 2px 5px; margin: 2px; -->
+</head>
+<body>
+<div class="container container-sm">
+  <h2>Life in Weeks — Sample JSON Renderer</h2>
+  <p class="text-muted">This standalone file contains a small sample JSON embedded below. Replace the JSON inside the <code>&lt;script id="weeks-data"&gt;</code> tag with your full data when ready.</p>
+  <form id="weeks-form" class="mb-3">
+    <textarea id="weeks-input" class="form-control" aria-label="Weeks JSON"></textarea>
+    <div class="mt-2">
+      <button type="submit" class="btn btn-primary btn-sm">Render JSON</button>
+      <span id="weeks-input-error" role="status" aria-live="polite" class="ml-3"></span>
+    </div>
+  </form>
+  <div id="weeks-root" class="weeks-grid" aria-live="polite"></div>
+  <div class="legend">Tip: open this file directly in the browser — no server required.</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Embed your JSON here. Paste the full buster.json contents between the tags. -->
+<script id="weeks-data" type="application/json">
+{
+  "weeks": [
+    { "kind": "label", "text": "Weeks of Life" },
+    { "kind": "week", "date": "2023-01-01", "content": "Week 1", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-01-08", "content": "Week 2", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-01-15", "content": "Week 3", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-01-22", "content": "Week 4", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-01-29", "content": "Week 5", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-02-05", "content": "Week 6", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-02-12", "content": "Week 7", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-02-19", "content": "Week 8", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-02-26", "content": "Week 9", "attrs": { "data-filled": "true" } },
+    { "kind": "week", "date": "2023-03-05", "content": "Week 10", "attrs": { "data-filled": "true" } }
+  ]
+}
+</script>
+
+<script>
+function htmlToFragment(htmlString) {
+  const template = document.createElement('template');
+  template.innerHTML = htmlString.trim();
+  return template.content;
+}
+
+function createLabel(item) {
+  const container = document.createElement('div');
+  container.className = 'label-row';
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.textContent = item.text || '';
+  container.appendChild(label);
+  if (item.attrs && item.attrs.note) {
+    const note = document.createElement('div');
+    note.className = 'text-muted small';
+    note.style.marginLeft = '8px';
+    note.textContent = item.attrs.note;
+    container.appendChild(note);
+  }
+  return container;
+}
+
+function createWeek(item) {
+  const wrap = document.createElement('div');
+  wrap.className = 'week';
+  if (item.attrs) {
+    for (const k in item.attrs) {
+      try { wrap.setAttribute(k, item.attrs[k]); } catch (e) {}
+    }
+  }
+
+  if ((item.anchorAttrs && item.anchorAttrs.href) || (item.attrs && item.attrs.href)) {
+    const a = document.createElement('a');
+    a.href = (item.anchorAttrs && item.anchorAttrs.href) || (item.attrs && item.attrs.href) || '#';
+    a.target = (item.anchorAttrs && item.anchorAttrs.target) || (item.attrs && item.attrs.target) || '_self';
+    a.rel = 'noopener noreferrer';
+    if (item.content) {
+      try { a.appendChild(htmlToFragment(item.content)); } catch(e) { a.textContent = item.content; }
+    }
+    wrap.appendChild(a);
+  } else if (item.content) {
+    const span = document.createElement('span');
+    span.innerHTML = item.content;
+    wrap.appendChild(span);
+  }
+
+  if (item.attrs && item.attrs['data-toggle'] === 'popover' && item.attrs['data-content']) {
+    wrap.classList.add('popovered');
+    wrap.setAttribute('data-toggle', 'popover');
+    wrap.setAttribute('data-content', item.attrs['data-content']);
+    if (item.attrs['data-original-title']) wrap.setAttribute('title', item.attrs['data-original-title']);
+  }
+
+  if (item.attrs && item.attrs['data-filled'] === 'true') wrap.classList.add('color-filled');
+  else wrap.classList.add('color-empty');
+
+  if (item.date) wrap.dataset.date = item.date;
+  return wrap;
+}
+
+function markFutureDates(root) {
+  const now = new Date();
+  root.querySelectorAll('.week').forEach(w => {
+    const d = w.dataset.date;
+    if (!d) return;
+    const parsed = new Date(d);
+    if (isNaN(parsed)) return;
+    if (parsed > now) w.classList.add('future-date');
+  });
+}
+
+function initPopovers(root) {
+  if (window.jQuery && typeof window.jQuery.fn.popover === 'function') {
+    window.jQuery(root).find('[data-toggle="popover"]').popover({trigger:'hover', html:true, placement:'auto'});
+  }
+}
+
+function renderWeeksFromJson(items) {
+  const root = document.getElementById('weeks-root');
+  root.innerHTML = '';
+  if (!Array.isArray(items)) return;
+  items.forEach(item => {
+
+    if (!item || !item.kind) return;
+    if (item.kind === 'label') root.appendChild(createLabel(item));
+    else if (item.kind === 'week') root.appendChild(createWeek(item));
+    else {
+      const div = document.createElement('div');
+          // replace class name {
+      if (item.attrs.class == 'class-week'){
+        item.attrs.class = 'border border-tertiary float-left text-center text-truncate';
+      } else if (item.attrs.class == 'border-trunc'){
+        item.attrs.class = 'border border-gray border-secondary float-left text-truncate';
+      }
+      if (item.attrs.style == 'border-trunc-style'){
+        item.attr.style = 'height: 2em; max-height: 2em; padding: 2px 5px; margin: 2px;'
+      }
+      div.textContent = JSON.stringify(item);
+      root.appendChild(div);
+    }
+  });
+  markFutureDates(root);
+  initPopovers(root);
+}
+
+// Load embedded JSON and render (no server required)
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const script = document.getElementById('weeks-data');
+    let data = [];
+    if (script) data = JSON.parse(script.textContent || script.innerText || '[]');
+    // support object wrappers
+    if (data && typeof data === 'object') {
+      if (Array.isArray(data)) ;
+      else if (Array.isArray(data.items)) data = data.items;
+      else if (Array.isArray(data.weeks)) data = data.weeks;
+      else data = [];
+    }
+    window.weeksData = data;
+    renderWeeksFromJson(data);
+    // initialize live JSON editor form (textarea + submit)
+    try { initWeeksInputForm(); } catch(e) { /* ignore if function missing */ }
+  } catch (err) {
+    console.error('Failed to parse embedded weeks JSON', err);
+    document.getElementById('weeks-root').innerHTML = '<div class="text-danger">Error parsing embedded JSON: ' + (err.message || err) + '</div>';
+  }
+});
+
+window.renderWeeksFromJson = renderWeeksFromJson;
+
+function initWeeksInputForm() {
+  const script = document.getElementById('weeks-data');
+  const textarea = document.getElementById('weeks-input');
+  const form = document.getElementById('weeks-form');
+  const err = document.getElementById('weeks-input-error');
+  if (!form || !textarea) return;
+  // populate textarea with embedded JSON
+  if (script) textarea.value = (script.textContent || script.innerText || '').trim();
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (err) err.textContent = '';
+    const txt = (textarea.value || '').trim();
+    if (!txt) {
+      if (err) err.textContent = 'Input is empty';
+      return;
+    }
+    try {
+      let parsed = JSON.parse(txt);
+      // accept objects with items or weeks wrappers
+      if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed)) ;
+        else if (Array.isArray(parsed.items)) parsed = parsed.items;
+        else if (Array.isArray(parsed.weeks)) parsed = parsed.weeks;
+        else parsed = [];
+      }
+      window.weeksData = parsed;
+      renderWeeksFromJson(parsed);
+    } catch (ex) {
+      if (err) err.textContent = 'Invalid JSON: ' + (ex.message || ex);
+      console.error('Invalid JSON in weeks input:', ex);
+    }
+  });
+}
+</script>
+
+</body>
+</html>
