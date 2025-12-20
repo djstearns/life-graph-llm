@@ -3,6 +3,8 @@ package-lock.json
 __pycache__
 .pytest_cache
 .venv
+*.DS_Store
+.DS_Store
 *.egg-info
 docker_app/graphs/credentials.json
 docker_app/.streamlit/secrets.toml
