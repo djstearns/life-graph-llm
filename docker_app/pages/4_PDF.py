@@ -5,28 +5,45 @@ import json
 import boto3
 import numpy as np
 import time
-from utils.session_auth import require_login
+from utils.auth import Auth
 from utils.llm import Llm
 from config_file import Config
 import streamlit.components.v1 as components
 from datetime import date
-from utils.llm import Llm
 from streamlit_pdf_viewer import pdf_viewer
-import ast
 
 sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
 from lifegraph.lifegraph import Lifegraph, Papersize
 
 st.set_page_config(page_title="PDF", page_icon="📈")
 
-st.sidebar.header("Step 3: PDF")    
+st.sidebar.header("PDF")    
 
 st.markdown("# PDF")
 
+# ID of Secrets Manager containing cognito parameters
+secrets_manager_id = Config.SECRETS_MANAGER_ID
+
+# ID of the AWS region in which Secrets Manager is deployed
+region = Config.DEPLOYMENT_REGION
+
+
+# Initialise CognitoAuthenticator
+authenticator = Auth.get_authenticator(secrets_manager_id, region)
+
+# Authenticate user, and stop here if not logged in
+is_logged_in = authenticator.login()
+if not is_logged_in:
+    st.stop()
+
+
+def logout():
+    authenticator.logout()
+
 with st.sidebar:
-    st.text(f"Welcome!")
-    require_login()
-  
+    st.text(f"Welcome,\n{authenticator.get_username()}")
+    st.button("Logout", "logout_btn", on_click=logout)
+
 # st.write(
 #     """This demo illustrates a combination of plotting and animation with
 # Streamlit. We're generating a bunch of random numbers in a loop for around
@@ -53,8 +70,6 @@ with st.sidebar:
 # # rerun.
 # st.button("Re-run")
 
-#This page will not work on stream lit.
-
 css = '''
 <style>
     [data-testid="stMain"] {
@@ -66,7 +81,6 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-
 
 def generate_lifegraph(birthdate, events):
     # Create a Lifegraph instance
@@ -85,36 +99,17 @@ def generate_lifegraph(birthdate, events):
 
 def setup_page():
     # Example usage
-    # TODO: fix this hardcoded birthdate
-    birthdate = date(1960, 1, 1)
-    # events = [
-    #     {"text": "Born", "date": date(1990, 1, 1)},
-    #     {"text": "Started School", "date": date(1995, 9, 1)},
-    #     {"text": "Graduated High School", "date": date(2008, 6, 1)},
-    #     {"text": "Started University", "date": date(2008, 9, 1)},
-    #     {"text": "Graduated University", "date": date(2012, 6, 1)},
-    #     {"text": "First Job", "date": date(2013, 1, 1)},
-    # ]
+    birthdate = date(1990, 1, 1)
+    events = [
+        {"text": "Born", "date": date(1990, 1, 1)},
+        {"text": "Started School", "date": date(1995, 9, 1)},
+        {"text": "Graduated High School", "date": date(2008, 6, 1)},
+        {"text": "Started University", "date": date(2008, 9, 1)},
+        {"text": "Graduated University", "date": date(2012, 6, 1)},
+        {"text": "First Job", "date": date(2013, 1, 1)},
+    ]
 
-    events = st.session_state.get('llm_output')    
-    llm = Llm(Config.BEDROCK_REGION)
-    response = llm.invoke("Format the following events in chronological order into a python list of objects where the key 'comment' becomes 'text': and the key 'date' remains the same. Format the values of the date to a python date object like Y-m-d. If there is a range, use the start date only. Return only the python list of objects without any explanation. Here are the events: " + events)
-
-    # Transform response to json
-    json_response = json.loads(response.get("body").read())
-
-    # Format response and print it in the console
-    pretty_json_output = json.dumps(json_response, indent=2)
-    
-    string_dict = json_response['content'][0]['text'].replace("\"\n\"", '').replace('\n', '').replace("'", '"').replace('    ', '')
-    print("API response: ", string_dict)
-    my_dict = json.loads(string_dict)
-    for event in my_dict:
-        print(event)
-        if 'date' in event:
-            date_str = event['date']
-            event['date'] = date.fromisoformat(date_str)
-    pdf_path = generate_lifegraph(birthdate, my_dict)
+    pdf_path = generate_lifegraph(birthdate, events)
 
     # Display the PDF in Streamlit
     with open(pdf_path, "rb") as pdf_file:
@@ -122,10 +117,9 @@ def setup_page():
         st.download_button(label="Download Lifegraph PDF", data=pdf_bytes, file_name="lifegraph.pdf", mime="application/pdf")
         #st.components.v1.html(f'<iframe src="data:application/pdf;base64,{pdf_bytes.encode("base64")}" width="700" height="500"></iframe>', height=500)
         st.components.v1.html(f'<iframe src="'+pdf_path+'" width="700" height="500"></iframe>', height=500)
-        # st.component.pdf_viewer(
+        # st.component. pdf_viewer(
         # "path/to/pdf",
         # on_annotation_click=my_custom_annotation_handler,
         # annotations=annotations
         # )
-with st.form("my_form"):
-    submitted = st.form_submit_button(label="Create PDF", on_click=setup_page)
+setup_page()

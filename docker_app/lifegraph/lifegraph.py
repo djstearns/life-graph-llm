@@ -12,9 +12,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 
-plt.rcParams['text.usetex'] = True
-plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}' 
-
 from .configuration import LifegraphParams, Papersize
 
 exclude = []
