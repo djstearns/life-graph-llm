@@ -89,7 +89,7 @@ def update_lifegraph_provider():
         path_to_html = 'docker_app/graphs/'+resources[provider][0]['file']
         with open(path_to_html,'r') as f: 
           html_data = f.read()
-        st.session_state['lifegraph_provider_url'] = providers.get(path_to_html)
+        st.session_state['lifegraph_provider_url'] = providers_p.get(path_to_html)
         st.session_state['html_data'] = html_data
     keep_values()
 
