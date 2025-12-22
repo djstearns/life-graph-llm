@@ -1,0 +1,68 @@
+You will be creating a json string of 10 events. You will look at the following posts and find similar events and assign them to a calendarname that is inuitive to the commonality of the events such as education, work experience, travel, or family events. Create the json string with 10 events from the following posts with the following format with no additional wording in the output.
+The calendar color is limited to Expected 'stone' | 'slate' | 'zinc' | 'green' | 'emerald' | 'teal' | 'cyan' | 'sky' | 'pink' | 'orange' | 'amber' | 'yellow'
+{
+  "calendar": {
+    "name": "Marie Curie",
+    "color": "teal",
+    "length": 66,
+    "displayEventLabels": true,
+    "quote": {
+      "enabled": true,
+      "text": "Nothing in life is to be feared, it is only to be understood.",
+      "author": "Marie Curie"
+    },
+    "userCard": {
+      "enabled": true,
+      "data": {
+        "profileUrl": "",
+        "name": "Marie Curie"
+      }
+    },
+    "displayCalendarName": true,
+    "yearsAxis": "age",
+    "weekShape": "circle",
+    "startDate": "1867-11-07",
+    "endDate": "",
+    "fixedStartDate": true,
+    "featured": false,
+    "access": {
+      "generalAccess": "public"
+    },
+    "yearGroupLength": 10,
+    "weekGroupLength": 26,
+    "emoji": "1f9ea",
+    "icon": null
+  },
+  "events": [
+    {
+      "name": "Born in Warsaw",
+      "startDate": "1867-11-07",
+      "endDate": "1867-11-07",
+      "color": "stone"
+    },
+    {
+      "name": "Moves to Paris (Sorbonne)",
+      "startDate": "1891-11-01",
+      "endDate": "1891-11-01",
+      "color": "sky"
+    },
+    {
+      "name": "Discovery of Polonium & Radium",
+      "startDate": "1898-12-21",
+      "endDate": "1898-12-21",
+      "color": "green"
+    },
+    {
+      "name": "Nobel Prize in Physics",
+      "startDate": "1903-12-10",
+      "endDate": "1903-12-10",
+      "color": "yellow"
+    },
+    {
+      "name": "Nobel Prize in Chemistry",
+      "startDate": "1911-12-10",
+      "endDate": "1911-12-10",
+      "color": "yellow"
+    }
+  ]
+}

@@ -32,7 +32,7 @@ def generate_lifegraph(events):
             lg.add_life_event(event['comment'], datetime.strptime(event['date'], "%Y-%m-%d"), color=event.get('color', None))
 
     # Save the life graph as a PDF
-    pdf_path = "graphs.kshores_lifegraph.pdf"
+    pdf_path = "Kshores_lifegraph.pdf"
     lg.save(pdf_path)
     lg.close()
 
@@ -70,7 +70,7 @@ def setup_page():
             date_str = event['date']
             event['date'] = date.fromisoformat(date_str)
     pdf_path = generate_lifegraph(birthdate, my_dict)
-
+    print(pdf_path)
     # Display the PDF in Streamlit
     # with open(pdf_path, "rb") as pdf_file:
     #     pdf_bytes = pdf_file.read()

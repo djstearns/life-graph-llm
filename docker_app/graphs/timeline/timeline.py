@@ -56,6 +56,6 @@ def main_function(dates):
     ax.set_title("Lifegraph", pad=10, loc="left", fontsize=25, fontweight="bold");
     ax.grid(False)
 
-    figs = plt.savefig("graphs.timeline_lifegraph.png", format="jpeg", bbox_inches="tight")
+    figs = plt.savefig("Matplotlib_lifegraph.pdf", format="pdf", bbox_inches="tight")
 
     return figs

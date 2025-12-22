@@ -4,6 +4,7 @@ import boto3
 import numpy as np
 import time
 import re
+import os
 import requests
 from utils.session_auth import require_login
 from utils.llm import Llm
@@ -69,7 +70,13 @@ else:
 def run_llm(input_sent, llm):
     if input_sent:
         # Invoke the Bedrock foundation model
-        response = llm.invoke(input_sent)
+        if st.session_state.get("auth_method", "AWS IAM Keys") == "OpenAI API Key":
+            llm = Llm(Config.BEDROCK_REGION, openai_api_key=st.session_state.get("openai_api_key", None))
+            response = llm.invoke_openai(input_sent)
+        else:
+            llm = Llm(Config.BEDROCK_REGION, aws_secret_access_key=st.session_state.get("aws_secret_access_key", None), aws_access_key_id=st.session_state.get("aws_access_key_id", None))
+            response = llm.invoke(input_sent)
+
         # Transform response to json
         json_response = json.loads(response.get("body").read())
 
@@ -88,61 +95,78 @@ def run_llm(input_sent, llm):
         return
 #         # if 'key' not in st.session_state:
           
-
+def keep_values():
+    for key in st.session_state:
+        if ':' not in key:
+            st.session_state[key] = st.session_state[key]
+keep_values()
 # >>> import plotly.express as px
 # >>> fig = px.box(range(10))
 # >>> fig.write_html('test.html')
 
 #st.header("test html import")
 
+platform_options = ["Facebook","Twitter", "Web"]
 
 
 # Add title on the page
 st.title("Step 1b: Create your new Life Graph JSON Data")
 
 # ensure session_state defaults for persistent inputs
+if 'aws_access_key_id' not in st.session_state:
+    st.session_state['aws_access_key_id'] = ""
+if 'fb_access_token' not in st.session_state:
+    st.session_state['fb_access_token'] = ""
 if 'bearer_token' not in st.session_state:
     st.session_state['bearer_token'] = ""
 if 'twitter_handle' not in st.session_state:
     st.session_state['twitter_handle'] = ""
 if 'num_tweets' not in st.session_state:
     st.session_state['num_tweets'] = 10
+if 'fb_num_posts' not in st.session_state:
+    st.session_state['fb_num_posts'] = 10
 if 'input_area' not in st.session_state:
     st.session_state['input_area'] = st.session_state.get('json_suggestion') or ""
-if 'internet_url' not in st.session_state:
-    st.session_state['internet_url'] = ""
+if 'web_url' not in st.session_state:
+    st.session_state['web_url'] = ""
 if 'llm_output' not in st.session_state:
     st.session_state['llm_output'] = ""
 if 'tweets' not in st.session_state:
     st.session_state['tweets'] = []
 if 'facebook_feed' not in st.session_state:
     st.session_state['facebook_feed'] = []
-if 'internet_content' not in st.session_state:
-    st.session_state['internet_content'] = ""
-if 'fbtoken' in st.session_state:
-    st.session_state['fb_access_token'] = st.session_state['fbtoken']
+if 'web_content' not in st.session_state:
+    st.session_state['web_content'] = ""
+if 'platform' not in st.session_state:
+    st.session_state['platform'] = platform_options[2]
 
 with st.sidebar:
     st.sidebar.header("Step 1a: Get your data")
-    require_login()
+
     # Platform selector: show only the relevant controls (persisted)
-    platform = st.sidebar.selectbox("Platform", ["Facebook","Twitter", 
-                                                 "Internet"], key='platform', )
+     # Platform selector: show only the relevant controls (persisted)
+    platform = st.sidebar.selectbox("Platform", options=platform_options, key='platform', on_change=keep_values)
     
     if platform == "Twitter":
         # Add Twitter form in the sidebar
         st.sidebar.subheader("Fetch Tweets")
-        bearer_token = st.sidebar.text_input("Bearer Token", key='bearer_token')
-        twitter_handle = st.sidebar.text_input("Twitter Handle", key='twitter_handle')
-        num_tweets = st.sidebar.number_input("Number of Tweets", min_value=1, max_value=100, value=st.session_state['num_tweets'], key='num_tweets')
+        bearer_token = st.sidebar.text_input("Bearer Token", key='bearer_token', on_change=keep_values, type="password")
+        twitter_handle = st.sidebar.text_input("Twitter Handle", key='twitter_handle', on_change=keep_values, )
+        num_tweets = st.sidebar.number_input("Number of Tweets", min_value=1, max_value=100, value=st.session_state['num_tweets'], key='num_tweets', on_change=keep_values)
         fetch_tweets_button = st.sidebar.button("Fetch Tweets")
 
         if fetch_tweets_button and st.session_state['twitter_handle']:
             try:
+                # Example usage (remove or wrap in `if __name__ == "__main__":` if needed):
+                api = TwitterAPI(st.session_state['bearer_token'])
+                user = api.get_user_by_username(st.session_state['twitter_handle'])
+                tweets = api.get_user_tweets(user["data"]["id"], max_results=st.session_state['num_tweets'])
+                # print(tweets)
                 # Create an instance of the TwitterClient using persisted token
-                twitter_client = TwitterClient(st.session_state['bearer_token'])
+                ###### OLD #####
+                # twitter_client = TwitterClient(st.session_state['bearer_token'])
                 # Fetch the tweets
-                tweets = twitter_client.get_tweets(st.session_state['twitter_handle'], st.session_state['num_tweets'])
+                # tweets = twitter_client.get_tweets(st.session_state['twitter_handle'], st.session_state['num_tweets'])
                 # Check for empty result (graceful failure)
                 if not tweets:
                     st.sidebar.error("No tweets returned. This may indicate an expired or invalid bearer token, a private account, or no available tweets.")
@@ -169,8 +193,8 @@ with st.sidebar:
     elif platform == "Facebook":
         # Facebook controls (shown only when platform == "Facebook")
         st.sidebar.subheader("Fetch Facebook Feed")
-        fb_access_token = st.sidebar.text_input("Facebook Access Token", key='fb_access_token', value=st.session_state.get('fb_access_token', ''))
-        fb_num_posts = st.sidebar.number_input("Number of Posts", min_value=1, max_value=10000, value=st.session_state.get('fb_num_posts', 10), key='fb_num_posts')
+        fb_access_token = st.sidebar.text_input("Facebook Access Token", key='fb_access_token', on_change=keep_values, type='password')
+        fb_num_posts = st.sidebar.number_input("Number of Posts", min_value=1, max_value=10000, key='fb_num_posts', on_change=keep_values)
         fetch_facebook_button = st.sidebar.button("Fetch Facebook Feed")
 
         if fetch_facebook_button and st.session_state['fb_access_token']:
@@ -197,37 +221,27 @@ with st.sidebar:
                 st.session_state["input_area"] = ""
             
 
-    elif platform == "Internet":
-        st.sidebar.subheader("Fetch Internet Content")
-        internet_url = st.sidebar.text_input("URL", key='internet_url')
-        fetch_internet_button = st.sidebar.button("Fetch internet Content")
+    elif platform == "Web":
+        st.sidebar.subheader("Fetch web Content")
+        web_url = st.sidebar.text_input("Web URL", key='web_url', on_change=keep_values)
+        fetch_web_button = st.sidebar.button("Fetch web Content")
 
-        if fetch_internet_button and st.session_state['internet_url']:
+        if fetch_web_button and st.session_state['web_url']:
             try:
-                response = requests.get(internet_url)
+                response = requests.get(web_url)
                 if response.status_code == 200:
-                    internet_content = response.text
-                    st.session_state["internet_content"] = internet_content
+                    web_content = response.text
+                    st.session_state["web_content"] = web_content
                     # put content into shared input area too
-                    st.session_state["input_area"] = internet_content
-                elif response.status_code == 429:
-                    print('test ')
-                    response = requests.get(internet_url, headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'})
-                    if response.status_code == 200:
-                        internet_content = response.text
-                        st.session_state["internet_content"] = internet_content
-                        # put content into shared input area too
-                        st.session_state["input_area"] = internet_content
-                    print(response)
+                    st.session_state["input_area"] = web_content
                 else:
-                    print(response)
-                    st.sidebar.error("Failed to fetch internet content")
+                    st.sidebar.error("Failed to fetch web content")
             except Exception as e:
-                st.sidebar.error(f"Failed to fetch internet content: {e}")
-                st.session_state["internet_content"] = ""
+                st.sidebar.error(f"Failed to fetch web content: {e}")
+                st.session_state["web_content"] = ""
                 st.session_state["input_area"] = ""
             
-
+    
 
 st.header("How to use this page:")
 st.write("This Page has two sections: The first is your current draft of Current Json Data, the second is a form that generates a json string that you can use to create your life graph. The third section is a form that fetches content from a twitter handle. You can use the content to generate a json string for your life graph. " \
@@ -241,12 +255,18 @@ with st.form("my_form"):
     instr_str = """
     Create a json string with 10 events of a typical American using single dates as well as range of dates with comments similar to this: {"birthdate":"1987-08-13", "data":[{"date": "2024-09-17", "comment": "B"}, {"date": "2024-09-16", "comment": "A"}, {"range":["1987-08-15","1988-01-01"], "comment":"birth"}]} 
     """
-    instr_str2 = """
-    Create a json string with 10 events from the following posts using single dates as well as range of dates with comments similar to this: {"birthdate":"1987-08-13", "data":[{"itemid":1, "date": "2024-09-17", "comment": "B"}, {"itemid":2, "date": "2024-09-16", "comment": "A"}, {"itemid":3, "range":["1987-08-15","1988-01-01"], "comment":"birth"}]}
-    """
     st.code(instr_str,wrap_lines=True)
     "==== OR ===="
-    st.code(instr_str2,wrap_lines=True)
+    try:
+        with open(st.session_state.get('selected_prompt_path'), 'r') as fh:
+            data = fh.read()
+            if 'selected_prompt_path' in st.session_state:
+                st.code(data, language='json',wrap_lines=True)
+       
+    except Exception as e:
+        st.write(f'Unable to preview file: {e}')
+
+   
     input_pre = st.text_area("Input: Prefix Sentence to LLM", value=st.session_state.get('input_pre', ""), key="preinput_area")
     st.session_state['input_pre'] = input_pre
     # bind the text area to a persistent session_state key so it survives page switches
@@ -274,4 +294,4 @@ if 'facebook_feed' in st.session_state:
     st.write(st.session_state["facebook_feed"])
 
 
-
+require_login()
