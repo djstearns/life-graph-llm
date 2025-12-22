@@ -104,7 +104,7 @@ with st.sidebar:
     st.text(f"Welcome!")
 
     # Life graph provider selector (label -> URL value)
-    providers = {
+    providers_p = {
         "Matplotlib":"python_resource",
         "Buster": "https://github.com/busterbenson/notes/blob/master/_data/life-in-weeks.yml",
         "Dewey":"https://github.com/dewey/my-life-in-weeks",
@@ -125,7 +125,7 @@ with st.sidebar:
         
     }
     
-    provider_label = st.selectbox("Life graph provider", list(providers.keys()), index=0, key='lifegraph_provider_label', on_change=update_lifegraph_provider)
+    provider_label = st.selectbox("Life graph provider", list(providers_p.keys()), index=0, on_change=update_lifegraph_provider)
     st.session_state['lifegraph_provider_url'] = providers.get(provider_label)
     st.markdown(f"Selected provider: [{provider_label}]({st.session_state['lifegraph_provider_url']})")
 
