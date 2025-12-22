@@ -124,8 +124,8 @@ with st.sidebar:
         "Google Calendar": [{"file":"gcal.py","function":"main","type":"python"}],
         
     }
-    
-    provider_label = st.selectbox("Life graph provider", list(providers_p.keys()), index=0, on_change=update_lifegraph_provider)
+
+    provider_label = st.selectbox("Life graph provider", list(providers_p.keys()),key='lifegraph_provider_label', index=0, on_change=update_lifegraph_provider)
     st.session_state['lifegraph_provider_url'] = providers_p.get(provider_label)
     st.markdown(f"Selected provider: [{provider_label}]({st.session_state['lifegraph_provider_url']})")
 
