@@ -80,7 +80,7 @@ def keep_values():
             st.session_state[key] = st.session_state[key]
 
 def update_lifegraph_provider():
-    provider = st.session_state.get('lifegraph_provider_label', 'Djstearns')
+    provider = st.session_state.get('lifegraph_provider_label_p', 'Djstearns')
     if resources[provider][0]['type'] == 'python':
         st.warning("Selected provider is a Python resource and cannot be previewed here.")
         if 'html_data' in st.session_state:
@@ -125,7 +125,7 @@ with st.sidebar:
         
     }
 
-    provider_label = st.selectbox("Life graph provider", list(providers_p.keys()),key='lifegraph_provider_label', index=0, on_change=update_lifegraph_provider)
+    provider_label = st.selectbox("Life graph provider", list(providers_p.keys()),key='lifegraph_provider_label_p', index=0, on_change=update_lifegraph_provider)
     st.session_state['lifegraph_provider_url'] = providers_p.get(provider_label)
     st.markdown(f"Selected provider: [{provider_label}]({st.session_state['lifegraph_provider_url']})")
 
@@ -235,7 +235,7 @@ with st.form("another-form"):
     if submit:
       try:
         # Dynamically import the module
-        provider = st.session_state.get('lifegraph_provider_label', 'Djstearns')
+        provider = st.session_state.get('lifegraph_provider_label_p', 'Djstearns')
         # print(provider)
         module_name = resources[provider][0]['file']
         my_module = importlib.import_module(module_name)
