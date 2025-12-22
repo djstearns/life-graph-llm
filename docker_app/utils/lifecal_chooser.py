@@ -89,7 +89,7 @@ class LifecalChooser:
                 # Show small previews for common image types
                 if ext in ('png', 'jpg', 'jpeg', 'gif', 'webp'):
                     try:
-                        st.image(file_path, width='content')
+                        st.image(file_path)
                     except Exception:
                         st.write(f'{files[fname][0]}')
                 else:
@@ -112,7 +112,7 @@ class LifecalChooser:
             st.write(os.path.basename(sel))
             sel_ext = pathlib.Path(sel).suffix.lower().lstrip('.')
             if sel_ext in ('png', 'jpg', 'jpeg', 'gif', 'webp'):
-                st.image(sel, width='content')
+                st.image(sel)
             else:
                 # For other types, show a download link
                 try:
