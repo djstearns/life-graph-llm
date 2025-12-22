@@ -7,7 +7,7 @@ import os
 import pathlib
 from utils.session_auth import get_authenticator, require_login, sign_up, confirm_sign_up
 from utils.llm import Llm
-import utils.lifecal_chooser
+from utils.lifecal_chooser import LifecalChooser
 from config_file import Config
 
 
@@ -30,7 +30,7 @@ css = '''
 </style>
 '''
 st.markdown(css, unsafe_allow_html=True)
-lifecal_chooser = utils.lifecal_chooser.LifecalChooser()
+lifecal_chooser = LifecalChooser()
 
 providers = {
         "Matplotlib":"python_resource",
