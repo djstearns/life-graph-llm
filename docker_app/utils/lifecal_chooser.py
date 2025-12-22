@@ -93,7 +93,6 @@ class LifecalChooser:
                     except Exception:
                         st.write(f'{files[fname][0]}')
                 else:
-                    print(files)
                     st.write(f'**{files[fname][0]}**')
 
                 # Select button sets the session state to the chosen graph path

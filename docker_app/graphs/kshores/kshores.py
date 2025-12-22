@@ -1,5 +1,6 @@
-import streamlit as st
 import sys
+sys.dont_write_bytecode = True
+import streamlit as st
 import pathlib
 import json
 import boto3
