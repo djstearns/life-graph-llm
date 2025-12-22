@@ -87,7 +87,7 @@ class LifecalChooser:
             with col:
                 ext = pathlib.Path(fname).suffix.lower().lstrip('.')
                 # Show small previews for common image types
-                if ext in ('png', 'jpg', 'jpeg', 'gif', 'webp'):
+                if ext in ('png', 'jpg', 'jpeg', 'gif', 'webp') and ext != 'pyc':
                     try:
                         st.image(file_path)
                     except Exception:
