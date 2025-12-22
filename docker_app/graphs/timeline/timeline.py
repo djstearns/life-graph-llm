@@ -36,7 +36,7 @@ def main_function(dates):
     with plt.style.context("fivethirtyeight"):
         fig, ax = plt.subplots(figsize=(9,18))
 
-    ax.plot([0,]* len(iphone_df), iphone_df.Date, "-o", color="black", markerfacecolor="white");
+    ax.plot([0,]* len(iphone_df), iphone_df.Date.values, "-o", color="black", markerfacecolor="white");
 
     ax.set_yticks(pd.date_range("2007-1-1", "2023-1-1", freq="ys"), range(2007, 2024));
     ax.set_xlim(-7,7);
