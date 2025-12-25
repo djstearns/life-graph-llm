@@ -10,7 +10,7 @@ from utils.session_auth import require_login
 from utils.llm import Llm
 from config_file import Config
 import streamlit.components.v1 as components
-from modules.twitter_module import TwitterClient # Import the Twitter client
+from modules.twitter_module import TwitterAPI # Import the Twitter client
 from modules.facebook_module import FacebookClient  # Import the Facebook client
 
 css = '''
@@ -100,14 +100,8 @@ def keep_values():
         if ':' not in key:
             st.session_state[key] = st.session_state[key]
 keep_values()
-# >>> import plotly.express as px
-# >>> fig = px.box(range(10))
-# >>> fig.write_html('test.html')
-
-#st.header("test html import")
 
 platform_options = ["Facebook","Twitter", "Web"]
-
 
 # Add title on the page
 st.title("Step 1b: Create your new Life Graph JSON Data")
