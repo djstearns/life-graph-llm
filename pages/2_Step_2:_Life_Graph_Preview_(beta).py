@@ -11,6 +11,8 @@ from utils.auth import Auth
 from utils.llm import Llm
 from config_file import Config
 import streamlit.components.v1 as components
+from utils.session_auth import get_authenticator, require_login, sign_up, confirm_sign_up
+
 import importlib
 
 # from graphs.timeline import my_function
@@ -32,6 +34,12 @@ css = '''
 st.markdown(css, unsafe_allow_html=True)
 
 
+def keep_values():
+    for key in st.session_state:
+        if ':' not in key:
+            st.session_state[key] = st.session_state[key]
+keep_values()
+
 # ID of Secrets Manager containing cognito parameters
 secrets_manager_id = Config.SECRETS_MANAGER_ID
 
@@ -41,15 +49,8 @@ region = Config.DEPLOYMENT_REGION
 # Initialise CognitoAuthenticator
 authenticator = Auth.get_authenticator(secrets_manager_id, region)
 
-# Authenticate user, and stop here if not logged in
-is_logged_in = authenticator.login()
-if not is_logged_in:
-    st.stop()
-
-
 def logout():
     authenticator.logout()
-
 
 # if 'html_data' not in st.session_state:
 #     st.session_state['lifegraph_provider_url'] = ""
@@ -108,21 +109,69 @@ def update_lifegraph_provider():
         st.session_state['lifegraph_provider_url'] = providers.get(path_to_html)
         st.session_state['html_data'] = html_data
 
-def keep_values():
-    for key in st.session_state:
-        if ':' not in key:
-            st.session_state[key] = st.session_state[key]
-keep_values()
-
 # Add title on the page
 st.title("Step 2: Life Graph Preview (beta)")
 st.text("Now that you have the data in the format this preview expects we can modify it here before inserting into our Life Graph Page below and pushing the render button." \
 "This is a beta feature. The life graph preview may not display correctly for all JSON inputs. Please review the generated PDF in the next step for the most accurate representation of your life graph.")
 
 with st.sidebar:
-    st.text(f"Welcome,\n{authenticator.get_username()}")
-    st.button("Logout", "logout_btn", on_click=logout)  
+    
 
+    st.text(f"Welcome,\n{authenticator.get_username()}")
+    # st.button("Logout", "logout_btn", on_click=logout)  
+
+
+    authenticator = None
+    try:
+        authenticator = get_authenticator()
+    except Exception as e:
+        authenticator = None
+        st.sidebar.error(f"Auth init failed: {e}")
+
+    # Authentication UI: Login, Sign up, Confirm sign up
+    if authenticator:
+        with st.sidebar:
+            action = st.selectbox("Auth Action", ["Login", "Sign up", "Confirm Sign up"])
+
+        # LOGIN: use require_login to render the login UI and halt the page until authenticated
+        if action == "Login":
+            if not require_login():
+                st.stop()
+
+        # SIGN UP: create a new Cognito user (or dev fallback)
+        elif action == "Sign up":
+            st.header("Create an account")
+            with st.form("signup_form"):
+                new_username = st.text_input("Username")
+                new_email = st.text_input("Email")
+                new_password = st.text_input("Password", type="password")
+                signup_submitted = st.form_submit_button("Sign up")
+
+            if signup_submitted:
+                try:
+                    sign_up(authenticator, new_username, new_email, new_password)
+                    st.success("Sign up successful. Check your email for a confirmation code if required.")
+                except Exception as e:
+                    st.error(f"Sign up failed: {e}")
+
+        # CONFIRM SIGN UP: submit confirmation code received via email/SMS
+        elif action == "Confirm Sign up":
+            st.header("Confirm your account")
+            with st.form("confirm_form"):
+                confirm_username = st.text_input("Username to confirm")
+                confirmation_code = st.text_input("Confirmation code")
+                confirm_submitted = st.form_submit_button("Confirm")
+
+            if confirm_submitted:
+                try:
+                    confirm_sign_up(authenticator, confirm_username, confirmation_code)
+                    st.success("Account confirmed. You can now log in.")
+                except Exception as e:
+                    st.error(f"Confirmation failed: {e}")
+
+    else:
+        st.sidebar.warning("Authentication is not available (auth init failed). The app may be running in a dev environment without Secrets Manager access.")
+   
     # Life graph provider selector (label -> URL value)
     providers = {
         "Matplotlib":"python_resource",

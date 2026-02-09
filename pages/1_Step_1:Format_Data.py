@@ -6,6 +6,9 @@ import time
 import re
 import requests
 from utils.llm import Llm
+from utils.auth import Auth
+
+from utils.session_auth import get_authenticator, require_login, sign_up, confirm_sign_up
 from config_file import Config
 import streamlit.components.v1 as components
 from pages.modules.twitter_module import TwitterAPI # Import the Twitter client
@@ -35,6 +38,12 @@ st.markdown(css, unsafe_allow_html=True)
 
 #st.header("test html import")
 
+def keep_values():
+    for key in st.session_state:
+        if ':' not in key:
+            st.session_state[key] = st.session_state[key]
+keep_values()
+
 # ID of Secrets Manager containing cognito parameters
 secrets_manager_id = Config.SECRETS_MANAGER_ID
 
@@ -44,22 +53,16 @@ region = Config.DEPLOYMENT_REGION
 # Initialise CognitoAuthenticator
 authenticator = Auth.get_authenticator(secrets_manager_id, region)
 
-# Authenticate user, and stop here if not logged in
-is_logged_in = authenticator.login()
-if not is_logged_in:
-    st.stop()
-
-
 def logout():
     authenticator.logout()
 
 # Add title on the page
 st.title("Generative Json")
 
-with st.sidebar:
-    st.text(f"Welcome,\n{authenticator.get_username()}")
-    st.button("Logout", "logout_btn", on_click=logout)
-    st.sidebar.header("Generate Json")    
+# with st.sidebar:
+#     st.text(f"Welcome,\n{authenticator.get_username()}")
+#     st.button("Logout", "logout_btn", on_click=logout)
+#     st.sidebar.header("Generate Json")    
 
 
 # Create the large language model object
@@ -102,11 +105,7 @@ def run_llm(input_sent, aws_secret_key=None, aws_access_key=None):
         return
 #         # if 'key' not in st.session_state:
           
-def keep_values():
-    for key in st.session_state:
-        if ':' not in key:
-            st.session_state[key] = st.session_state[key]
-keep_values()
+
 # >>> import plotly.express as px
 # >>> fig = px.box(range(10))
 # >>> fig.write_html('test.html')
@@ -150,8 +149,61 @@ if 'platform' not in st.session_state:
 
 with st.sidebar:
     st.sidebar.header("Step 1a: Get your data")
-    st.text(f"Welcome,\n{authenticator.get_username()}")
-    st.button("Logout", "logout_btn", on_click=logout)
+
+
+    authenticator = None
+    try:
+        authenticator = get_authenticator()
+    except Exception as e:
+        authenticator = None
+        st.sidebar.error(f"Auth init failed: {e}")
+
+    # Authentication UI: Login, Sign up, Confirm sign up
+    if authenticator:
+        with st.sidebar:
+            action = st.selectbox("Auth Action", ["Login", "Sign up", "Confirm Sign up"])
+
+        # LOGIN: use require_login to render the login UI and halt the page until authenticated
+        if action == "Login":
+            if not require_login():
+                st.stop()
+
+        # SIGN UP: create a new Cognito user (or dev fallback)
+        elif action == "Sign up":
+            st.header("Create an account")
+            with st.form("signup_form"):
+                new_username = st.text_input("Username")
+                new_email = st.text_input("Email")
+                new_password = st.text_input("Password", type="password")
+                signup_submitted = st.form_submit_button("Sign up")
+
+            if signup_submitted:
+                try:
+                    sign_up(authenticator, new_username, new_email, new_password)
+                    st.success("Sign up successful. Check your email for a confirmation code if required.")
+                except Exception as e:
+                    st.error(f"Sign up failed: {e}")
+
+        # CONFIRM SIGN UP: submit confirmation code received via email/SMS
+        elif action == "Confirm Sign up":
+            st.header("Confirm your account")
+            with st.form("confirm_form"):
+                confirm_username = st.text_input("Username to confirm")
+                confirmation_code = st.text_input("Confirmation code")
+                confirm_submitted = st.form_submit_button("Confirm")
+
+            if confirm_submitted:
+                try:
+                    confirm_sign_up(authenticator, confirm_username, confirmation_code)
+                    st.success("Account confirmed. You can now log in.")
+                except Exception as e:
+                    st.error(f"Confirmation failed: {e}")
+
+    else:
+        st.sidebar.warning("Authentication is not available (auth init failed). The app may be running in a dev environment without Secrets Manager access.")
+   
+
+
 
     # Platform selector: show only the relevant controls (persisted)
     platform = st.sidebar.selectbox("Platform", options=platform_options, key='platform', on_change=keep_values)
@@ -170,7 +222,7 @@ with st.sidebar:
                 api = TwitterAPI(st.session_state['bearer_token'])
                 user = api.get_user_by_username(st.session_state['twitter_handle'])
                 tweets = api.get_user_tweets(user["data"]["id"], max_results=st.session_state['num_tweets'])
-                # print(tweets)
+                print(tweets)
                 # Create an instance of the TwitterClient using persisted token
                 ###### OLD #####
                 # twitter_client = TwitterClient(st.session_state['bearer_token'])

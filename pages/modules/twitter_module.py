@@ -7,7 +7,7 @@ class TwitterAPI:
     Does not require tweepy.
     """
 
-    BASE_URL = "https://api.twitter.com/2"
+    BASE_URL = "https://api.x.com/2"
 
     def __init__(self, bearer_token: str):
         if not bearer_token:
