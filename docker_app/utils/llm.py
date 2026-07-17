@@ -46,8 +46,8 @@ class Llm:
         messages = [
             {"role": "user", "content": [{"type": "text", "text": input_text}]}
         ]
-
-        model_id = "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+        #OLD "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+        model_id = "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-opus-4-8"
         body = {
             "messages": messages,
             "anthropic_version": "bedrock-2023-05-31",
