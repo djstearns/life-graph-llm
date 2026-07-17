@@ -221,10 +221,12 @@ with st.sidebar:
         fetch_web_button = st.sidebar.button("Fetch web Content")
         st.sidebar.header('Decide your LLM')
         # Dropdown to select authentication method
-        st.sidebar.selectbox(
+          # Dropdown to select authentication method
+        auth_method = st.sidebar.selectbox(
             "Choose authentication method for LLM:",
             ["AWS IAM Keys", "OpenAI API Key"], key="auth_method"
         )
+
         if fetch_web_button and st.session_state['web_url']:
             try:
                 response = requests.get(web_url)
@@ -272,7 +274,6 @@ with st.form("my_form"):
     # bind the text area to a persistent session_state key so it survives page switches
     input_val = st.text_area("Automated Input: Social Media Event Data", value=st.session_state.get('input_area', json_suggestion), key="input_area")
 
-    
     # Show input fields based on selection
     if auth_method == "AWS IAM Keys": 
         aws_access_key_id = st.text_input("Provide your IAM User Access Key ID to enable LLM calls.", key="aws_access_key_id",type="password")
@@ -303,6 +304,5 @@ if 'tweets' in st.session_state:
 # show facebook feed if fetched
 if 'facebook_feed' in st.session_state:
     st.write(st.session_state["facebook_feed"])
-
 
 # require_login()
