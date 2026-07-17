@@ -216,7 +216,7 @@ with st.sidebar:
             
 
     elif platform == "Web":
-        st.sidebar.subheader("Fetch web Content")
+        st.sidebar.subheader("Fetch web Content:")
         web_url = st.sidebar.text_input("Web URL", key='web_url', on_change=keep_values)
         fetch_web_button = st.sidebar.button("Fetch web Content")
 
@@ -241,6 +241,7 @@ with st.sidebar:
         "Choose authentication method for LLM:",
         ["AWS IAM Keys", "OpenAI API Key"], key="auth_method"
     )
+    auth_method
 
 st.header("How to use this page:")
 st.write("This Page has two sections: The first is your current draft of Current Json Data, the second is a form that generates a json string that you can use to create your life graph. The third section is a form that fetches content from a twitter handle. You can use the content to generate a json string for your life graph. " \
