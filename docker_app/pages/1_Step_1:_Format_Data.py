@@ -234,8 +234,13 @@ with st.sidebar:
                 st.sidebar.error(f"Failed to fetch web content: {e}")
                 st.session_state["web_content"] = ""
                 st.session_state["input_area"] = ""
-            
     
+    st.sidebar.header('Decide your LLM')
+    # Dropdown to select authentication method
+    auth_method = st.sidebar.selectbox(
+        "Choose authentication method for LLM:",
+        ["AWS IAM Keys", "OpenAI API Key"], key="auth_method"
+    )
 
 st.header("How to use this page:")
 st.write("This Page has two sections: The first is your current draft of Current Json Data, the second is a form that generates a json string that you can use to create your life graph. The third section is a form that fetches content from a twitter handle. You can use the content to generate a json string for your life graph. " \
@@ -265,10 +270,21 @@ with st.form("my_form"):
     st.session_state['input_pre'] = input_pre
     # bind the text area to a persistent session_state key so it survives page switches
     input_val = st.text_area("Automated Input: Social Media Event Data", value=st.session_state.get('input_area', json_suggestion), key="input_area")
-    # Submit: call LLM using the value currently in session_state
-    st.text_input("Provide your IAM User Access Key ID to enable LLM calls.", key="aws_access_key_id",type="password")
-    st.text_input("Provide your IAM User Secret Access Key to enable LLM calls.", key="aws_secret_access_key",type="password")   
+
     
+    # Show input fields based on selection
+    if auth_method == "AWS IAM Keys": 
+        aws_access_key_id = st.text_input("Provide your IAM User Access Key ID to enable LLM calls.", key="aws_access_key_id",type="password")
+        aws_secret_access_key = st.text_input("Provide your IAM User Secret Access Key to enable LLM calls.", key="aws_secret_access_key",type="password")   
+        
+    elif auth_method == "OpenAI API Key":
+        openai_api_key = st.text_input("OpenAI API Key", type="password")
+        st.session_state["openai_api_key"] = openai_api_key
+
+    # st.text_input("Provide your IAM User Access Key ID to enable LLM calls.", key="aws_access_key_id",type="password")
+    # st.text_input("Provide your IAM User Secret Access Key to enable LLM calls.", key="aws_secret_access_key",type="password")   
+
+    # Submit: call LLM using the value currently in session_state   
     submitted = st.form_submit_button(label="Submit", type="secondary")
     if submitted:
         full_str = input_pre + "\n" + st.session_state.get('input_area', "")
