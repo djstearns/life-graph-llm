@@ -67,7 +67,7 @@ class LifecalChooser:
                 graphs_dir = c
                 files[c] = sorted([f for f in os.listdir(graphs_dir) if os.path.isfile(os.path.join(graphs_dir, f))])
 
-        print(files)
+        # print(files)
         if not graphs_dir:
             st.info('No `graphs` directory found. Create a `pages/graphs/` folder in the project root (or set up one under docker_app/) to enable tiles.')
             return
@@ -83,8 +83,10 @@ class LifecalChooser:
         for i, fname in enumerate(files):
             for j, ff in enumerate(files[fname]):
                 if (ff.endswith('.png') or ff.endswith('.html')):
-                    print(ff)
+                    # print(ff)
                     col = cols[i % per_row]
+                    # print('graphs dir:', graphs_dir)
+                
                     file_path = os.path.join(graphs_dir, fname)
                     with col:
                         ext = pathlib.Path(fname).suffix.lower().lstrip('.')
@@ -99,10 +101,16 @@ class LifecalChooser:
 
                         # Select button sets the session state to the chosen graph path
                         if st.button('Preview and Select', key=f'select_{graphs_dir}_{fname}/{files[fname][j]}', on_click=set_lifegraph_provider_label, args=(file_path,)):
-                            print(file_path+'/' + files[fname][j])
-                            print(fname)
-                            st.session_state['selected_graph'] = file_path+'/' + files[fname][j]
-                            st.session_state['selected_prompt_path'] = file_path+'/' + 'prompt.txt'
+                            # print(file_path)
+                            # print('============')
+                            # print(file_path+'/' + files[fname][j]) # OLD
+                            # print(fname)
+                            # print(fname + '/' + files[fname][j])
+                            new = fname + '/' + files[fname][j]
+                            st.session_state['selected_graph'] = new
+                            st.session_state['provider_label'] = files[fname][j]
+                            print(files[fname][j])
+                            st.session_state['selected_prompt_path'] = fname +'/' + 'prompt.txt'
                             
 
         # If a graph has been selected, show preview/details below

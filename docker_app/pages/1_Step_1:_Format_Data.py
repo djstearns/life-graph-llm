@@ -78,16 +78,26 @@ def run_llm(input_sent, llm):
             response = llm.invoke(input_sent)
 
         # Transform response to json
-        json_response = json.loads(response.get("body").read())
+        if st.session_state.get("auth_method", "AWS IAM Keys") == "OpenAI API Key":
+            print(response.text)
+            responses = json.loads(response.text)
+            print(responses)
+            # response.text.choices[0].message.content
+            json_response = responses['choices'][0]['message']['content']
+            pretty_json_output = json.dumps(json_response, indent=2)
+            st.session_state.llm_output = json_response
+        else:
+            json_response = json.loads(response.get("body").read())
+               # Format response and print it in the console
+            pretty_json_output = json.dumps(json_response, indent=2)
+            
+            st.session_state.llm_output = json_response['content'][0]['text']
 
-        # Format response and print it in the console
-        pretty_json_output = json.dumps(json_response, indent=2)
         print("API response: ", pretty_json_output)
-
         # Write response on Streamlit web interface
         st.write("**Foundation model output** \n\n", json_response)
         session_state = st.session_state
-        st.session_state.llm_output = json_response['content'][0]['text']
+       
         # Regular expression to match content between triple backticks
         # pattern = r"```(.*?)```"
         # Find all matches and return them as a list
@@ -133,6 +143,7 @@ if 'web_content' not in st.session_state:
     st.session_state['web_content'] = ""
 if 'platform' not in st.session_state:
     st.session_state['platform'] = platform_options[2]
+
 
 with st.sidebar:
     st.sidebar.header("Step 1a: Get your data")
@@ -226,6 +237,7 @@ with st.sidebar:
             "Choose authentication method for LLM:",
             ["AWS IAM Keys", "OpenAI API Key"], key="auth_method"
         )
+        
 
         if fetch_web_button and st.session_state['web_url']:
             try:

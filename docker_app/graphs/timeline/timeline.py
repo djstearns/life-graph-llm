@@ -40,7 +40,7 @@ def main_function(dates):
 
     ax.set_yticks(pd.date_range("2007-1-1", "2023-1-1", freq="ys"), range(2007, 2024));
     ax.set_xlim(-7,7);
-
+    
     for idx in range(len(iphone_df)):
         dt, product, level = iphone_df["Date"][idx], iphone_df["Product"][idx], iphone_df["Level"][idx]
         dt_str = dt.strftime("%b-%Y")
@@ -49,13 +49,14 @@ def main_function(dates):
                     arrowprops=dict(arrowstyle="-",color="red", linewidth=0.8),
                     va="center"
                    );
-
-    ax.spines[["left", "top", "right", "bottom"]].set_visible(False);
-    ax.spines[["left"]].set_position(("axes", 0.5));
-    ax.xaxis.set_visible(False);
-    ax.set_title("Lifegraph", pad=10, loc="left", fontsize=25, fontweight="bold");
-    ax.grid(False)
-
+   
+    # ax.spines[["left", "top", "right", "bottom"]].set_visible(False);
+    
+    # ax.spines[["left"]].set_position(("axes", 0.5));
+    # ax.xaxis.set_visible(False);
+    # ax.set_title("Lifegraph", pad=10, loc="left", fontsize=25, fontweight="bold");
+    # ax.grid(False)
+    
     figs = plt.savefig("Matplotlib_lifegraph.pdf", format="pdf", bbox_inches="tight")
-
+    
     return figs

@@ -5,6 +5,7 @@ import boto3
 import numpy as np
 import time
 import os
+import base64
 
 from utils.session_auth import require_login
 from utils.llm import Llm
@@ -124,8 +125,10 @@ with st.sidebar:
         "Google Calendar": [{"file":"gcal.py","function":"main","type":"python"}],
         
     }
+    print(st.session_state.get('provider_label', ''))
 
-    provider_label = st.selectbox("Life graph provider", list(providers_p.keys()),key='lifegraph_provider_label_p', index=0, on_change=update_lifegraph_provider)
+    print(st.session_state.get('lifegraph_provider_label_p', 'blah'))
+    provider_label = st.selectbox("Life graph provider", list(providers_p.keys()),key='lifegraph_provider_label_p',  on_change=update_lifegraph_provider) # index=0,
     st.session_state['lifegraph_provider_url'] = providers_p.get(provider_label)
     st.markdown(f"Selected provider: [{provider_label}]({st.session_state['lifegraph_provider_url']})")
 
@@ -211,7 +214,16 @@ inserted_text = '''
 }
 '''
 
-
+def display_pdf(file_path):
+    # Read file and encode it in base64
+    with open(file_path, "rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+    
+    # Create HTML iframe object
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+    
+    # Render the PDF component
+    st.markdown(pdf_display, unsafe_allow_html=True)
 
 with st.form("another-form"):
   # show and allow editing the shared input_area
@@ -240,16 +252,14 @@ with st.form("another-form"):
         module_name = resources[provider][0]['file']
         my_module = importlib.import_module(module_name)
         my_function = getattr(my_module, resources[provider][0]['function'])
+        
         fig =  my_function(st.session_state['input_area_preview'])
+        
         fmt = resources[provider][0]['format']
         if fmt == 'png':
             st.image(provider+"_lifegraph.png")
         elif fmt == 'pdf':
-            st.pdf(provider+"_lifegraph.pdf")
-            # with open(module_name+"_lifegraph.pdf", "rb") as pdf_file:
-            #     pdf_bytes = pdf_file.read()
-            #     st.download_button(label="Download Lifegraph PDF", data=pdf_bytes, file_name="lifegraph.pdf", mime="application/pdf")
-        #.image(fig, output_format="JPEG")
+            display_pdf(provider+"_lifegraph.pdf")
       except Exception as e:
         st.error(f"Error executing function: {e}")
 
