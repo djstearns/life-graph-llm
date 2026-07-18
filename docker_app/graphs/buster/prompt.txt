@@ -1,0 +1,39 @@
+Create a json string with {NUM} events from the following posts using single dates as well as range of dates with comments similar to following format where the first object format labels each decade, the second object marks the age in the year at the week of the month and day of birth and finally, the last object shows details of an event with a small descpription and pop over to show more details if necessary:
+[
+  {
+    "kind": "label",
+    "text": "My first ten years",
+    "date": "1976-05-28"
+  },
+  {
+    "kind": "week",
+    "content": "0 in 1976",
+    "date": "1976-05-28",
+    "attrs": {
+      "class": "border border-gray border-secondary float-left text-truncate",
+      "style": "height: 2em; max-height: 2em; padding: 2px 5px; margin: 2px;",
+      "data-toggle": "popover",
+      "data-placement": "right",
+      "data-trigger": "hover",
+      "data-content": "0 in 1976"
+    }
+  },
+  {
+    "kind": "week",
+    "date": "1976-05-28",
+    "title": "I enter the world",
+    "content": "\n\t\t    \t\t\n\t\t\t\t\t    \n\t\t    \t\t\t\n\t\t    \t\t\t\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<a title=\"May 28, 1976\" target=\"_new\" data-toggle=\"popover\" data-placement=\"auto\" data-trigger=\"hover\" data-content=\"Born at Hoag Hospital in Newport Beach California. 1976 was the year of the Dragon, Play That Funky Music and Rocky were top of the charts, and Gerald Ford was president. I'm a gemini, which of course doesn't mean anything. My mom collected bicentennial quarters to commemorate my birth year, since it was also the 200th birthday of America.\">I enter the world</a>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\n\t\t    \t\t\n\t\t    \t",
+    "attrs": {
+      "data-date": "1976-05-28",
+      "class": "week border border-tertiary float-left text-center text-truncate",
+      "style": "height: 2em; max-height: 2em; padding: 2px 5px; margin: 2px;"
+    },
+    "anchorAttrs": {
+      "title": "May 28, 1976",
+      "target": "_new",
+      "data-toggle": "popover",
+      "data-placement": "auto",
+      "data-trigger": "hover",
+      "data-content": "Born at Hoag Hospital in Newport Beach California. 1976 was the year of the Dragon, Play That Funky Music and Rocky were top of the charts, and Gerald Ford was president. I'm a gemini, which of course doesn't mean anything. My mom collected bicentennial quarters to commemorate my birth year, since it was also the 200th birthday of America."
+    }
+  },
