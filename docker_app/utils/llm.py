@@ -1,5 +1,7 @@
 import boto3
 import json
+import requests
+from os import getenv
 
 
 class Llm:
@@ -12,7 +14,7 @@ class Llm:
     #     )
     #     self.bedrock_client = bedrock_client
 
-    def __init__(self, bedrock_region, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None):
+    def __init__(self, bedrock_region, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None, openai_api_key=None):
         # Create Bedrock client, optionally supplying explicit credentials including a session token
         
         client_args = {
@@ -35,6 +37,9 @@ class Llm:
                                            aws_access_key_id=client_args.get('aws_access_key_id'),
                                            aws_secret_access_key=client_args.get('aws_secret_access_key'),
                                            aws_session_token=client_args.get('aws_session_token'))
+        
+        # Store OpenAI API key for use in invoke_openai method
+        self.openai_api_key = openai_api_key or getenv('OPENAI_API_KEY')
 
 
     def invoke(self, input_text):
@@ -46,8 +51,12 @@ class Llm:
         messages = [
             {"role": "user", "content": [{"type": "text", "text": input_text}]}
         ]
+        #Too Old
         #OLD "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-3-5-sonnet-20241022-v2:0"
-        model_id = "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-opus-4-8"
+        # opus 4.8 not available
+        # "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
+        # "arn:aws:bedrock:us-east-1:414676341887:application-inference-profile/6bh1s4njpoz7" #claude sonnet 4.6 (applicaiton profile doesnt have permissions)
+        model_id = "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-sonnet-4-6"  # Use the correct model ID for Claude Opus 4.8
         body = {
             "messages": messages,
             "anthropic_version": "bedrock-2023-05-31",
@@ -64,4 +73,39 @@ class Llm:
             body=body, modelId=model_id, accept=accept, contentType=contentType
         )
 
+        return response
+
+    def invoke_openai(self, input_text):
+        """
+        Make a call to OpenAI's API using the provided API key.
+        This method invokes the ChatCompletions endpoint.
+        """
+        
+        if not self.openai_api_key:
+            raise ValueError("OpenAI API key not provided during initialization")
+        
+        api_endpoint = "https://api.openai.com/v1/chat/completions"
+        
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.openai_api_key}"
+        }
+        
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "user", "content": input_text}
+            ],
+            "max_tokens": 4096,
+            "temperature": 0.0,
+        }
+        
+        response = requests.post(
+            api_endpoint,
+            headers=headers,
+            json=payload
+        )
+        
+        response.raise_for_status()  # Raise exception for non-2xx status codes
+        
         return response
