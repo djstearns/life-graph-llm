@@ -72,10 +72,14 @@ def run_llm(input_sent, llm):
         # Invoke the Bedrock foundation model
         if st.session_state.get("auth_method", "AWS IAM Keys") == "OpenAI API Key":
             llm = Llm(Config.BEDROCK_REGION, openai_api_key=st.session_state.get("openai_api_key", None))
-            response = llm.invoke_openai(input_sent)
+            response = llm.invoke_openai(input_sent, model_id=st.session_state.get("model_id", "arn:aws:bedrock:us-east-1:414676341887:inference-profile/us.anthropic.claude-sonnet-4-6"), 
+                                          max_tokens=int(st.session_state.get("max_tokens", 4096)), 
+                                          temperature=float(st.session_state.get("temperature", 0.0)))
         else:
             llm = Llm(Config.BEDROCK_REGION, aws_secret_access_key=st.session_state.get("aws_secret_access_key", None), aws_access_key_id=st.session_state.get("aws_access_key_id", None))
-            response = llm.invoke(input_sent)
+            response = llm.invoke(input_sent, model_id=st.session_state.get("model_id", "gpt-4o-mini"), 
+                                  max_tokens=int(st.session_state.get("max_tokens", 4096)), 
+                                  temperature=float(st.session_state.get("temperature", 0.0)))
 
         # Transform response to json
         if st.session_state.get("auth_method", "AWS IAM Keys") == "OpenAI API Key":
@@ -165,8 +169,12 @@ with st.sidebar:
                 # Example usage (remove or wrap in `if __name__ == "__main__":` if needed):
                 api = TwitterAPI(st.session_state['bearer_token'])
                 user = api.get_user_by_username(st.session_state['twitter_handle'])
-                tweets = api.get_user_tweets(user["data"]["id"], max_results=st.session_state['num_tweets'])
-                # print(tweets)
+                print(user)
+                print('test!!!')
+                print(user['data']['id'])
+                tweets = api.get_user_tweets(user['data']['id'], max_results=st.session_state['num_tweets'])
+                print('test123!')
+                print(tweets)
                 # Create an instance of the TwitterClient using persisted token
                 ###### OLD #####
                 # twitter_client = TwitterClient(st.session_state['bearer_token'])
@@ -176,14 +184,10 @@ with st.sidebar:
                 if not tweets:
                     st.sidebar.error("No tweets returned. This may indicate an expired or invalid bearer token, a private account, or no available tweets.")
                     st.sidebar.info("Try refreshing your token, verifying the handle, or checking account privacy settings.")
-                    st.session_state["tweets"] = []
-                    st.session_state["input_area"] = ""
+
                 else:
                     # Save to session_state and also populate the shared input_area
                     st.session_state["tweets"] = tweets
-                    st.session_state["bearer_token"] = bearer_token
-                    st.session_state["twitter_handle"] = twitter_handle
-                    st.session_state["num_tweets"] = num_tweets
                     try:
                         st.session_state["input_area"] = json.dumps(tweets, indent=2)
                     except Exception:
@@ -191,8 +195,6 @@ with st.sidebar:
             except Exception as e:
                 st.sidebar.error(f"Failed to fetch tweets: {e}")
                 st.sidebar.warning("This failure is often caused by an expired/invalid bearer token or network/permission issues.")
-                st.session_state["tweets"] = []
-                st.session_state["input_area"] = ""
             
 
     elif platform == "Facebook":
@@ -230,15 +232,7 @@ with st.sidebar:
         st.sidebar.subheader("Fetch web Content:")
         web_url = st.sidebar.text_input("Web URL", key='web_url', on_change=keep_values)
         fetch_web_button = st.sidebar.button("Fetch web Content")
-        st.sidebar.header('Decide your LLM')
-        # Dropdown to select authentication method
-          # Dropdown to select authentication method
-        auth_method = st.sidebar.selectbox(
-            "Choose authentication method for LLM:",
-            ["AWS IAM Keys", "OpenAI API Key"], key="auth_method"
-        )
-        
-
+       
         if fetch_web_button and st.session_state['web_url']:
             try:
                 response = requests.get(web_url)
@@ -253,9 +247,14 @@ with st.sidebar:
                 st.sidebar.error(f"Failed to fetch web content: {e}")
                 st.session_state["web_content"] = ""
                 st.session_state["input_area"] = ""
-    
-
-    
+st.sidebar.header('Decide your LLM')
+auth_method = st.sidebar.selectbox(
+    "Choose authentication method for LLM:",
+    ["AWS IAM Keys", "OpenAI API Key"], key="auth_method"
+) 
+ 
+st.sidebar.text_input("Model ID", key="model_id", on_change=keep_values)
+st.sidebar.text_input("Max Tokens", key="max_tokens", on_change=keep_values)    
 
 st.header("How to use this page:")
 st.write("This Page has two sections: The first is your current draft of Current Json Data, the second is a form that generates a json string that you can use to create your life graph. The third section is a form that fetches content from a twitter handle. You can use the content to generate a json string for your life graph. " \
@@ -270,15 +269,18 @@ with st.form("my_form"):
     Create a json string with 10 events of a typical American using single dates as well as range of dates with comments similar to this: {"birthdate":"1987-08-13", "data":[{"date": "2024-09-17", "comment": "B"}, {"date": "2024-09-16", "comment": "A"}, {"range":["1987-08-15","1988-01-01"], "comment":"birth"}]} 
     """
     st.code(instr_str,wrap_lines=True)
-    "==== OR ===="
+    
     try:
+        
         with open(st.session_state.get('selected_prompt_path'), 'r') as fh:
             data = fh.read()
             if 'selected_prompt_path' in st.session_state:
+                "==== OR ===="
                 st.code(data, language='json',wrap_lines=True)
        
     except Exception as e:
-        st.write(f'Unable to preview file: {e}')
+        st.write('Whoops! Go back and select a prompt file from the previous page. If you have not selected a prompt file, please do so before proceeding or else use the template above.')
+        # st.write(f'Unable to preview file: {e}')
 
    
     input_pre = st.text_area("Input: Prefix Sentence to LLM", value=st.session_state.get('input_pre', ""), key="preinput_area")

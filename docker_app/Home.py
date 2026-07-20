@@ -31,6 +31,56 @@ css = '''
     }
 </style>
 '''
+def keep_values():
+    for key in st.session_state:
+        if ':' not in key:
+            st.session_state[key] = st.session_state[key]
+
+def update_lifegraph_provider():
+    provider = st.session_state.get('lifegraph_provider_label_p', 'Djstearns')
+    if resources[provider][0]['type'] == 'python':
+        st.warning("Selected provider is a Python resource and cannot be previewed here.")
+        if 'html_data' in st.session_state:
+          del st.session_state['html_data']
+    else:
+        path_to_html = 'docker_app/graphs/'+resources[provider][0]['file']
+        with open(path_to_html,'r') as f: 
+          html_data = f.read()
+        st.session_state['lifegraph_provider_url'] = providers_p.get(path_to_html)
+        st.session_state['html_data'] = html_data
+    keep_values()
+
+keep_values()
+
+# ensure session_state defaults for persistent inputs
+if 'aws_access_key_id' not in st.session_state:
+    st.session_state['aws_access_key_id'] = ""
+if 'fb_access_token' not in st.session_state:
+    st.session_state['fb_access_token'] = ""
+if 'bearer_token' not in st.session_state:
+    st.session_state['bearer_token'] = ""
+if 'twitter_handle' not in st.session_state:
+    st.session_state['twitter_handle'] = ""
+if 'num_tweets' not in st.session_state:
+    st.session_state['num_tweets'] = 10
+if 'fb_num_posts' not in st.session_state:
+    st.session_state['fb_num_posts'] = 10
+if 'input_area' not in st.session_state:
+    st.session_state['input_area'] = st.session_state.get('json_suggestion') or ""
+if 'web_url' not in st.session_state:
+    st.session_state['web_url'] = ""
+if 'llm_output' not in st.session_state:
+    st.session_state['llm_output'] = ""
+if 'tweets' not in st.session_state:
+    st.session_state['tweets'] = []
+if 'facebook_feed' not in st.session_state:
+    st.session_state['facebook_feed'] = []
+if 'web_content' not in st.session_state:
+    st.session_state['web_content'] = ""
+if 'platform' not in st.session_state:
+    st.session_state['platform'] = platform_options[2]
+
+
 st.markdown(css, unsafe_allow_html=True)
 lifecal_chooser = LifecalChooser()
 
