@@ -145,8 +145,8 @@ if 'facebook_feed' not in st.session_state:
     st.session_state['facebook_feed'] = []
 if 'web_content' not in st.session_state:
     st.session_state['web_content'] = ""
-if 'platform' not in st.session_state:
-    st.session_state['platform'] = platform_options[2]
+# if 'platform' not in st.session_state:
+#     st.session_state['platform'] = platform_options[2]
 
 
 with st.sidebar:
